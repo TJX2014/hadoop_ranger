@@ -1,0 +1,67 @@
+<configuration>
+  <property>
+    <name>hive.metastore.uris</name>
+    <value>thrift://0.0.0.0:9093</value>
+  </property>
+  <property>
+    <name>hive.metastore.port</name>
+    <value>9093</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:mysql://172.16.63.109:3306/hive_metastore_0407?createDatabaseIfNotExist=true</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>com.mysql.jdbc.Driver</value>
+    <description>Driver class name for a JDBC metastore</description>
+  </property>
+
+  <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>root</value>
+    <description>Username to use against metastore database</description>
+  </property>
+
+  <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>123456</value>
+    <description>password to use against metastore database</description>
+  </property>
+
+  <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>/usr/hive1/warehouse</value>
+  </property>
+
+  <property>
+    <name>hive.metastore.authentication.type</name>
+    <value>kerberos</value>
+  </property>
+  <property>
+    <name>hive.metastore.thrift.impersonation.enabled</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hive.metastore.kerberos.principal</name>
+    <value>hive-metastore/k8s-node1@HADOOP.COM</value>
+  </property>
+  <property>
+    <name>hive.metastore.sasl.enabled</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hive.metastore.kerberos.keytab.file</name>
+    <value>/tmp/hive-metastore.keytab</value>
+  </property>
+
+  <property>
+    <name>yarn.resourcemanager.principal</name>
+    <value>yarn/k8s-node1@HADOOP.COM</value>
+  </property>
+
+  <!--  <property>-->
+<!--    <name>metastore.catalog.default</name>-->
+<!--    <value>hdfs_yt_103</value>-->
+<!--  </property>-->
+</configuration>
