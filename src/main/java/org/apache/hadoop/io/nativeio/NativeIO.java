@@ -25,8 +25,8 @@ import org.apache.hadoop.fs.HardLink;
 import org.apache.hadoop.fs.PathIOException;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SecureIOUtils;
-import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.util.CleanerUtil;
+//import org.apache.hadoop.thirdparty.com.google.common.annotations.VisibleForTesting;
+//import org.apache.hadoop.util.CleanerUtil;
 import org.apache.hadoop.util.NativeCodeLoader;
 import org.apache.hadoop.util.PerformanceAdvisory;
 import org.apache.hadoop.util.Shell;
@@ -509,15 +509,15 @@ public class NativeIO {
         }
 
         public static void munmap(MappedByteBuffer buffer) {
-            if (CleanerUtil.UNMAP_SUPPORTED) {
-                try {
-                    CleanerUtil.getCleaner().freeBuffer(buffer);
-                } catch (IOException var2) {
-                    LOG.info("Failed to unmap the buffer", var2);
-                }
-            } else {
-                LOG.trace(CleanerUtil.UNMAP_NOT_SUPPORTED_REASON);
-            }
+//            if (CleanerUtil.UNMAP_SUPPORTED) {
+//                try {
+//                    CleanerUtil.getCleaner().freeBuffer(buffer);
+//                } catch (IOException var2) {
+//                    LOG.info("Failed to unmap the buffer", var2);
+//                }
+//            } else {
+//                LOG.trace(CleanerUtil.UNMAP_NOT_SUPPORTED_REASON);
+//            }
 
         }
 
@@ -704,7 +704,7 @@ public class NativeIO {
             }
         }
 
-        @VisibleForTesting
+//        @VisibleForTesting
         public static class NoMlockCacheManipulator extends CacheManipulator {
             public NoMlockCacheManipulator() {
             }
@@ -726,7 +726,7 @@ public class NativeIO {
             }
         }
 
-        @VisibleForTesting
+//        @VisibleForTesting
         public static class CacheManipulator {
             public CacheManipulator() {
             }
