@@ -60,6 +60,23 @@
     <value>yarn/k8s-node1@HADOOP.COM</value>
   </property>
 
+  <property>
+    <name>hive.security.authorization.enabled</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hive.security.authorization.manager</name>
+    <value>org.apache.ranger.authorization.hive.authorizer.RangerHiveAuthorizerFactory</value>
+  </property>
+  <property>
+    <name>hive.security.authenticator.manager</name>
+    <value>org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator</value>
+  </property>
+  <property>
+    <name>hive.conf.restricted.list</name>
+    <value>hive.security.authorization.enabled,hive.security.authorization.manager,hive.security.authenticator.manager</value>
+  </property>
+
   <!--  <property>-->
 <!--    <name>metastore.catalog.default</name>-->
 <!--    <value>hdfs_yt_103</value>-->

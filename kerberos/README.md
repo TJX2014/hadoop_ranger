@@ -42,3 +42,5 @@ scp /mnt/c/Users/Allen/.m2/repository/net/java/dev/jna/jna/5.7.0/jna-5.7.0.jar  
 
 spark客户端:
 bin/spark-sql --conf spark.submit.deployMode=client --conf spark.master=local[*] --conf spark.hive.metastore.uris=thrift://0.0.0.0:9093 --conf spark.jars= --conf spark.sql.defaultCatalog=spark_catalog --conf spark.sql.hive.metastore.jars=/opt/apache-hive-3.1.2-bin/lib/* --conf spark.kerberos.keytab=/tmp/xiaoxing.keytab --conf spark.kerberos.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.hadoop.security.authentication=kerberos --conf spark.hadoop.hadoop.security.authorization=true --conf spark.hadoop.yarn.resourcemanager.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.dfs.namenode.kerberos.principal=hdfs/_HOST@HADOOP.COM --conf spark.hadoop.dfs.data.transfer.protection=integrity --conf spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+
+scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-hive-plugin/2.4.0/ranger-hive-plugin-2.4.0.jar k8s-node1:/opt/apache-hive-3.1.2-bin/lib

@@ -43,6 +43,11 @@
             <artifactId>ranger-hdfs-plugin</artifactId>
             <version>2.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.ranger</groupId>
+            <artifactId>ranger-hive-plugin</artifactId>
+            <version>2.4.0</version>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.apache.hadoop</groupId>-->
 <!--            <artifactId>hadoop-hdfs-httpfs</artifactId>-->
