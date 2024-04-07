@@ -28,4 +28,12 @@
         <name>hadoop.proxyuser.hive-metastore.groups</name>
         <value>*</value>
     </property>
+    <property>
+        <name>hadoop.proxyuser.hive-server2.hosts</name>
+        <value>*</value>
+    </property>
+    <property>
+        <name>hadoop.proxyuser.hive-server2.groups</name>
+        <value>*</value>
+    </property>
 </configuration>

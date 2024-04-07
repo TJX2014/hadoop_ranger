@@ -78,6 +78,11 @@
             <artifactId>hive-metastore</artifactId>
             <version>${hive.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-cli</artifactId>
+            <version>${hive.version}</version>
+        </dependency>
 
 <!--        ranger -->
         <dependency>

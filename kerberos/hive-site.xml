@@ -77,6 +77,19 @@
     <value>hive.security.authorization.enabled,hive.security.authorization.manager,hive.security.authenticator.manager</value>
   </property>
 
+  <property>
+    <name>hive.server2.authentication.kerberos.principal</name>
+    <value>hive-server2/k8s-node1@HADOOP.COM</value>
+  </property>
+  <property>
+    <name>hive.server2.authentication.kerberos.keytab</name>
+    <value>/tmp/hive-server2.keytab</value>
+  </property>
+  <property>
+    <name>hive.zookeeper.quorum</name>
+    <value>k8s-node1</value>
+  </property>
+
   <!--  <property>-->
 <!--    <name>metastore.catalog.default</name>-->
 <!--    <value>hdfs_yt_103</value>-->

@@ -6,12 +6,16 @@ addprinc -pw bigdata123 hdfs/k8s-node1
 addprinc -pw bigdata123 hive-metastore/k8s-node1
 addprinc -pw bigdata123 yarn/k8s-node1
 addprinc -pw bigdata123 xiaohong/k8s-node1
+addprinc -pw bigdata123 hive-server2/k8s-node1
+addprinc -pw bigdata123 zookeeper/k8s-node1
 
 生成hdfs.keytab
 ktadd -k /tmp/hdfs.keytab -norandkey hdfs/k8s-node1@HADOOP.COM
 ktadd -k /tmp/hive-metastore.keytab -norandkey hive-metastore/k8s-node1@HADOOP.COM
 ktadd -k /tmp/yarn.keytab -norandkey yarn/k8s-node1@HADOOP.COM
 ktadd -k /tmp/xiaohong.keytab -norandkey xiaohong/k8s-node1@HADOOP.COM
+ktadd -k /tmp/hive-server2.keytab -norandkey hive-server2/k8s-node1@HADOOP.COM
+ktadd -k /tmp/zookeeper.keytab -norandkey zookeeper/k8s-node1@HADOOP.COM
 
 kinit hive-metastore/k8s-node1@HADOOP.COM -kt /tmp/hive-metastore.keytab
 kinit xiaohong/k8s-node1@HADOOP.COM -kt /tmp/xiaohong.keytab
@@ -27,8 +31,17 @@ hadoop-daemon.sh start datanode
 查看根目录hadoop默认acl
 hdfs dfs -getfacl /
 
+启动zookeeper:
+cd $ZOOKEEPER_HOME
+server:
+nohup java -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf -cp "$ZOOKEEPER_HOME/lib/*" org.apache.zookeeper.server.quorum.QuorumPeerMain conf/zoo.cfg > /tmp/zk.log &
+client:
+java -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf -Dzookeeper.server.principal=zookeeper/k8s-node1@HADOOP.COM -cp "$ZOOKEEPER_HOME/lib/*" org.apache.zookeeper.ZooKeeperMain
+
 启动hive-metastore:
 nohup hive --service metastore > /tmp/metastore.log &
+nohup java -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.metastore.HiveMetaStore > /tmp/hms.log &
+nohup java -Djava.library.path=$HADOOP_HOME/lib/native -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp $HIVE_HOME/conf:$HIVE_HOME/lib/*:`hadoop classpath` org.apache.hive.service.server.HiveServer2 > /tmp/hs2.log &
 
 启动ranger:
 docker run -itd -v C:\usr\docker\ranger-2.4.0-admin\install.properties:/opt/ranger-2.1.1-admin/install.properties -v C:\Users\Allen\.m2\repository\com\mysql\mysql-connector-j\8.0.31\mysql-connector-j-8.0.31.jar:/mnt/c/Users/Allen/.m2/repository/com/mysql/mysql-connector-j/8.0.31/mysql-connector-j-8.0.31.jar -p 6080:6080 -p 5006:5005 --name=ranger deploy.deepexi.com/fastdata/ranger:157575
@@ -44,3 +57,10 @@ spark客户端:
 bin/spark-sql --conf spark.submit.deployMode=client --conf spark.master=local[*] --conf spark.hive.metastore.uris=thrift://0.0.0.0:9093 --conf spark.jars= --conf spark.sql.defaultCatalog=spark_catalog --conf spark.sql.hive.metastore.jars=/opt/apache-hive-3.1.2-bin/lib/* --conf spark.kerberos.keytab=/tmp/xiaoxing.keytab --conf spark.kerberos.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.hadoop.security.authentication=kerberos --conf spark.hadoop.hadoop.security.authorization=true --conf spark.hadoop.yarn.resourcemanager.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.dfs.namenode.kerberos.principal=hdfs/_HOST@HADOOP.COM --conf spark.hadoop.dfs.data.transfer.protection=integrity --conf spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 
 scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-hive-plugin/2.4.0/ranger-hive-plugin-2.4.0.jar k8s-node1:/opt/apache-hive-3.1.2-bin/lib
+
+beeline客户端
+kinit
+kinit xiaoxing/k8s-node1@HADOOP.COM -kt /tmp/xiaoxing.keytab
+beeline -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/k8s-node1@HADOOP.COM"
+beeline -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/_HOST@HADOOP.COM"
+

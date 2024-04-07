@@ -20,16 +20,16 @@ import java.util.Map;
 public class HiveUserLogin {
 
   public static void main(String[] args) throws IOException, KrbException, TException, LoginException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-//    System.setProperty("java.security.krb5.realm", "HADOOP.COM");
-//    System.setProperty("java.security.krb5.kdc", "k8s-node1");
-    String krb5File = "/tmp/hive-metastore_k8s-node1_HADOOP_COM_1711971291276.krb5conf";
-    String defaultKrb5 = "/usr/kerberos_hms/krb5.conf";
-    System.setProperty("java.security.krb5.conf", krb5File);
+    System.setProperty("java.security.krb5.realm", "HADOOP.COM");
+    System.setProperty("java.security.krb5.kdc", "k8s-node1");
+//    String krb5File = "/tmp/hive-metastore_k8s-node1_HADOOP_COM_1711971291276.krb5conf";
+//    String defaultKrb5 = "/usr/kerberos_hms/krb5.conf";
+//    System.setProperty("java.security.krb5.conf", krb5File);
 //    loginOutside();
     String principal = "hive-metastore/k8s-node1@HADOOP.COM";
-    String keyTab = "/tmp/hive-metastore_k8s-node1_HADOOP_COM_1711967470821.keytab";
+//    String keyTab = "/tmp/hive-metastore_k8s-node1_HADOOP_COM_1711967470821.keytab";
 
-    UserGroupInformation.loginUserFromKeytab(principal, keyTab);
+//    UserGroupInformation.loginUserFromKeytab(principal, keyTab);
 
     KerberosName.setRules("DEFAULT");
 
