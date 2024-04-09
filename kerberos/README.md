@@ -7,15 +7,20 @@ addprinc -pw bigdata123 hive-metastore/k8s-node1
 addprinc -pw bigdata123 yarn/k8s-node1
 addprinc -pw bigdata123 xiaohong/k8s-node1
 addprinc -pw bigdata123 hive-server2/k8s-node1
+addprinc -pw bigdata123 hive-server2/k8s-node3
 addprinc -pw bigdata123 zookeeper/k8s-node1
+addprinc -pw bigdata123 admin/k8s-node1
+addprinc -pw bigdata123 xiaoxing/k8s-node3
 
 生成hdfs.keytab
 ktadd -k /tmp/hdfs.keytab -norandkey hdfs/k8s-node1@HADOOP.COM
 ktadd -k /tmp/hive-metastore.keytab -norandkey hive-metastore/k8s-node1@HADOOP.COM
 ktadd -k /tmp/yarn.keytab -norandkey yarn/k8s-node1@HADOOP.COM
 ktadd -k /tmp/xiaohong.keytab -norandkey xiaohong/k8s-node1@HADOOP.COM
-ktadd -k /tmp/hive-server2.keytab -norandkey hive-server2/k8s-node1@HADOOP.COM
+ktadd -k /tmp/hive-server2.keytab -norandkey hive-server2/k8s-node1 hive-server2/k8s-node3
 ktadd -k /tmp/zookeeper.keytab -norandkey zookeeper/k8s-node1@HADOOP.COM
+ktadd -k /tmp/admin.keytab -norandkey admin/k8s-node1@HADOOP.COM
+ktadd -k /tmp/xiaoxing-node3.keytab -norandkey xiaoxing/k8s-node3@HADOOP.COM
 
 kinit hive-metastore/k8s-node1@HADOOP.COM -kt /tmp/hive-metastore.keytab
 kinit xiaohong/k8s-node1@HADOOP.COM -kt /tmp/xiaohong.keytab
@@ -38,9 +43,11 @@ nohup java -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas
 client:
 java -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf -Dzookeeper.server.principal=zookeeper/k8s-node1@HADOOP.COM -cp "$ZOOKEEPER_HOME/lib/*" org.apache.zookeeper.ZooKeeperMain
 
-启动hive-metastore:
+启动hive
+hive-metastore:
 nohup hive --service metastore > /tmp/metastore.log &
 nohup java -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.metastore.HiveMetaStore > /tmp/hms.log &
+hive-server2:
 nohup java -Djava.library.path=$HADOOP_HOME/lib/native -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp $HIVE_HOME/conf:$HIVE_HOME/lib/*:`hadoop classpath` org.apache.hive.service.server.HiveServer2 > /tmp/hs2.log &
 
 启动ranger:
@@ -53,9 +60,6 @@ scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-plugins-audit/2.4
 scp /mnt/c/Users/Allen/.m2/repository/com/kstruct/gethostname4j/1.0.0/gethostname4j-1.0.0.jar  k8s-node1:/opt/hadoop-3.1.1/share/hadoop/hdfs/
 scp /mnt/c/Users/Allen/.m2/repository/net/java/dev/jna/jna/5.7.0/jna-5.7.0.jar  k8s-node1:/opt/hadoop-3.1.1/share/hadoop/hdfs/
 
-spark客户端:
-bin/spark-sql --conf spark.submit.deployMode=client --conf spark.master=local[*] --conf spark.hive.metastore.uris=thrift://0.0.0.0:9093 --conf spark.jars= --conf spark.sql.defaultCatalog=spark_catalog --conf spark.sql.hive.metastore.jars=/opt/apache-hive-3.1.2-bin/lib/* --conf spark.kerberos.keytab=/tmp/xiaoxing.keytab --conf spark.kerberos.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.hadoop.security.authentication=kerberos --conf spark.hadoop.hadoop.security.authorization=true --conf spark.hadoop.yarn.resourcemanager.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.dfs.namenode.kerberos.principal=hdfs/_HOST@HADOOP.COM --conf spark.hadoop.dfs.data.transfer.protection=integrity --conf spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
-
 scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-hive-plugin/2.4.0/ranger-hive-plugin-2.4.0.jar k8s-node1:/opt/apache-hive-3.1.2-bin/lib
 
 beeline客户端
@@ -63,4 +67,15 @@ kinit
 kinit xiaoxing/k8s-node1@HADOOP.COM -kt /tmp/xiaoxing.keytab
 beeline -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/k8s-node1@HADOOP.COM"
 beeline -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/_HOST@HADOOP.COM"
+direct:
+java -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/*:/opt/apache-hive-3.1.2-bin/lib/hive-beeline-3.1.2.jar org.apache.hive.beeline.BeeLine -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/_HOST@HADOOP.COM"
+by zk:
+java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf -Dzookeeper.server.principal=zookeeper/k8s-node1@HADOOP.COM -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/*:/opt/apache-hive-3.1.2-bin/lib/hive-beeline-3.1.2.jar org.apache.hive.beeline.BeeLine -u "jdbc:hive2://k8s-node1:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2"
+beeline -u "jdbc:hive2://k8s-node1:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2"
+
+spark客户端:
+unset HIVE_HOME HIVE_CONF_DIR HADOOP_HOME
+
+bin/spark-sql --conf spark.jars= --conf spark.submit.deployMode=client --conf spark.master=local[*] --conf spark.hive.metastore.uris=thrift://0.0.0.0:9093 --conf spark.sql.defaultCatalog=spark_catalog --conf spark.sql.hive.metastore.jars=/opt/apache-hive-3.1.2-bin/lib/* --conf spark.kerberos.keytab=/tmp/xiaoxing.keytab --conf spark.kerberos.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.hadoop.security.authentication=kerberos --conf spark.hadoop.hadoop.security.authorization=true --conf spark.hadoop.yarn.resourcemanager.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.dfs.namenode.kerberos.principal=hdfs/_HOST@HADOOP.COM --conf spark.hadoop.dfs.data.transfer.protection=integrity --conf spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005
+bin/spark-sql --conf spark.jars=local:///opt/spark-3.4.2-bin-hadoop3/iceberg-spark-runtime-3.4_2.12-1.4.0.jar --conf spark.submit.deployMode=client --conf spark.master=local[*] --conf spark.hive.metastore.uris=thrift://0.0.0.0:9093 --conf spark.sql.defaultCatalog=spark_catalog --conf spark.sql.hive.metastore.jars=/opt/apache-hive-3.1.2-bin/lib/* --conf spark.kerberos.keytab=/tmp/xiaoxing.keytab --conf spark.kerberos.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.hadoop.security.authentication=kerberos --conf spark.hadoop.hadoop.security.authorization=true --conf spark.hadoop.yarn.resourcemanager.principal=xiaoxing/k8s-node1@HADOOP.COM --conf spark.hadoop.dfs.namenode.kerberos.principal=hdfs/_HOST@HADOOP.COM --conf spark.hadoop.dfs.data.transfer.protection=integrity --conf spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005
 

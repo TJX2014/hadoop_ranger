@@ -20,6 +20,9 @@ import java.util.Map;
 public class HiveUserLogin {
 
   public static void main(String[] args) throws IOException, KrbException, TException, LoginException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+
+    HiveConf.getVar(new HiveConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
+
     System.setProperty("java.security.krb5.realm", "HADOOP.COM");
     System.setProperty("java.security.krb5.kdc", "k8s-node1");
 //    String krb5File = "/tmp/hive-metastore_k8s-node1_HADOOP_COM_1711971291276.krb5conf";
@@ -76,7 +79,7 @@ public class HiveUserLogin {
     hiveSiteConf.set("hive.metastore.uris", "thrift://10.201.0.213:9093");
     hiveSiteConf.set("hive.metastore.sasl.enabled", "true");
     HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(hiveSiteConf);
-    List<String> catalogs = metaStoreClient.getCatalogs();
-    System.out.println(catalogs);
+//    List<String> catalogs = metaStoreClient.getCatalogs();
+//    System.out.println(catalogs);
   }
 }
