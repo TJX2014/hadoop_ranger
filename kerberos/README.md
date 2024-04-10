@@ -8,6 +8,7 @@ addprinc -pw bigdata123 yarn/k8s-node1
 addprinc -pw bigdata123 xiaohong/k8s-node1
 addprinc -pw bigdata123 hive-server2/k8s-node1
 addprinc -pw bigdata123 hive-server2/k8s-node3
+addprinc -pw bigdata123 hive-server2/k8s_local
 addprinc -pw bigdata123 zookeeper/k8s-node1
 addprinc -pw bigdata123 admin/k8s-node1
 addprinc -pw bigdata123 xiaoxing/k8s-node3
@@ -18,6 +19,7 @@ ktadd -k /tmp/hive-metastore.keytab -norandkey hive-metastore/k8s-node1@HADOOP.C
 ktadd -k /tmp/yarn.keytab -norandkey yarn/k8s-node1@HADOOP.COM
 ktadd -k /tmp/xiaohong.keytab -norandkey xiaohong/k8s-node1@HADOOP.COM
 ktadd -k /tmp/hive-server2.keytab -norandkey hive-server2/k8s-node1 hive-server2/k8s-node3
+ktadd -k /tmp/hive-server2.keytab -norandkey hive-server2/k8s_local hive-server2/k8s-node1 hive-server2/k8s-node3
 ktadd -k /tmp/zookeeper.keytab -norandkey zookeeper/k8s-node1@HADOOP.COM
 ktadd -k /tmp/admin.keytab -norandkey admin/k8s-node1@HADOOP.COM
 ktadd -k /tmp/xiaoxing-node3.keytab -norandkey xiaoxing/k8s-node3@HADOOP.COM
@@ -68,10 +70,10 @@ kinit xiaoxing/k8s-node1@HADOOP.COM -kt /tmp/xiaoxing.keytab
 beeline -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/k8s-node1@HADOOP.COM"
 beeline -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/_HOST@HADOOP.COM"
 direct:
+beeline -u "jdbc:hive2://k8s-node1:10000/;principal=hive-server2/_HOST@HADOOP.COM"
 java -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/*:/opt/apache-hive-3.1.2-bin/lib/hive-beeline-3.1.2.jar org.apache.hive.beeline.BeeLine -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/_HOST@HADOOP.COM"
 by zk:
-java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf -Dzookeeper.server.principal=zookeeper/k8s-node1@HADOOP.COM -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/*:/opt/apache-hive-3.1.2-bin/lib/hive-beeline-3.1.2.jar org.apache.hive.beeline.BeeLine -u "jdbc:hive2://k8s-node1:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2"
-beeline -u "jdbc:hive2://k8s-node1:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2"
+java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf -Dzookeeper.server.principal=zookeeper/k8s-node1@HADOOP.COM -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/*:/opt/apache-hive-3.1.2-bin/lib/hive-beeline-3.1.2.jar org.apache.hive.beeline.BeeLine -u "jdbc:hive2://k8s-node1:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2" -n xiaoxing
 
 spark客户端:
 unset HIVE_HOME HIVE_CONF_DIR HADOOP_HOME

@@ -79,11 +79,11 @@
 
   <property>
     <name>hive.server2.authentication.kerberos.principal</name>
-    <value>hive-server2/_HOST@HADOOP.COM</value>
+    <value>hive-server2/k8s_local@HADOOP.COM</value>
   </property>
   <property>
     <name>hive.server2.authentication.kerberos.keytab</name>
-    <value>/tmp/hive-server2.keytab</value>
+    <value>/usr/kerberos_hms/hive-server2.keytab</value>
   </property>
   <property>
     <name>hive.zookeeper.quorum</name>
