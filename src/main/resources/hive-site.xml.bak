@@ -107,6 +107,11 @@
     <value>k8s-node1:2181</value>
   </property>
 
+  <property>
+      <name>metastore.catalog.default</name>
+      <value>xiaoxing_iceberg3_682</value>
+  </property>
+
   <!--  <property>-->
 <!--    <name>metastore.catalog.default</name>-->
 <!--    <value>hdfs_yt_103</value>-->
