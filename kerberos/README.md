@@ -3,7 +3,7 @@ kadmin.local
 
 创建hdfs账户指定密码为bigdata123
 addprinc -pw bigdata123 hdfs/k8s-node1
-addprinc -pw bigdata123 hive-metastore/k8s-node1
+addprinc -pw bigdata123 hive-metastore/node02
 addprinc -pw bigdata123 yarn/k8s-node1
 addprinc -pw bigdata123 xiaohong/k8s-node1
 addprinc -pw bigdata123 hive-server2/k8s-node1
@@ -14,8 +14,10 @@ addprinc -pw bigdata123 admin/k8s-node1
 addprinc -pw bigdata123 xiaoxing/k8s-node3
 
 生成hdfs.keytab
+ktadd -k /tmp/dlink.keytab -norandkey dlink
+
 ktadd -k /tmp/hdfs.keytab -norandkey hdfs/k8s-node1@HADOOP.COM
-ktadd -k /tmp/hive-metastore.keytab -norandkey hive-metastore/k8s-node1@HADOOP.COM
+ktadd -k /tmp/hive-metastore.keytab -norandkey hive-metastore/node02
 ktadd -k /tmp/yarn.keytab -norandkey yarn/k8s-node1@HADOOP.COM
 ktadd -k /tmp/xiaohong.keytab -norandkey xiaohong/k8s-node1@HADOOP.COM
 ktadd -k /tmp/hive-server2.keytab -norandkey hive-server2/k8s-node1 hive-server2/k8s-node3
@@ -35,8 +37,7 @@ hdfs namenode -format
 hadoop-daemon.sh start namenode
 hadoop-daemon.sh start datanode
 
-nohup java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -cp `hadoop classpath` o
-rg.apache.hadoop.hdfs.server.namenode.NameNode > /tmp/nn.log &
+nohup java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -cp `hadoop classpath` org.apache.hadoop.hdfs.server.namenode.NameNode > /tmp/nn.log &
 
 查看根目录hadoop默认acl
 hdfs dfs -getfacl /
@@ -48,10 +49,22 @@ nohup java -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas
 client:
 java -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf -Dzookeeper.server.principal=zookeeper/k8s-node1@HADOOP.COM -cp "$ZOOKEEPER_HOME/lib/*" org.apache.zookeeper.ZooKeeperMain
 
+配置hive hms
+docker run -itd -e MYSQL_ROOT_PASSWORD=123456 -p 3307:3306 -v /opt/apache-hive-3.1.2-bin/mysql-volume:/var/lib/mysql mysql:8.0.19
+
+export HADOOP_HOME=/opt/hadoop-3.3.1
+export HIVE_HOME=/opt/apache-hive-3.1.2-bin
+export PATH=$HADOOP_HOME/bin:$HIVE_HOME/bin:$PATH
+
+初始化schema:
+schematool -initSchema -dbType mysql
+
 启动hive
 hive-metastore:
 nohup hive --service metastore > /tmp/metastore.log &
 nohup java -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.metastore.HiveMetaStore > /tmp/hms.log &
+hive-client:
+java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.cli.CliDriver
 hive-server2:
 nohup java -Djava.library.path=$HADOOP_HOME/lib/native -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp $HIVE_HOME/conf:$HIVE_HOME/lib/*:`hadoop classpath` org.apache.hive.service.server.HiveServer2 > /tmp/hs2.log &
 

@@ -122,7 +122,7 @@
 		<value>wasb://ranger-audit1@youraccount.blob.core.windows.net</value>
 	</property>
 
-	the following 3 correspond to the properties with similar name in core-site.xml, i.e.
+	the following 3 correspond to the properties with similar name in core-site.xml.bak, i.e.
 	- fs.azure.account.key.youraccount.blob.core.windows.net => xasecure.audit.destination.hdfs.config.fs.azure.account.key.youraccount.blob.core.windows.net and
 	- fs.azure.account.keyprovider.youraccount.blob.core.windows.net => xasecure.audit.destination.hdfs.config.fs.azure.account.keyprovider.youraccount.blob.core.windows.net,
 	- fs.azure.shellkeyprovider.script => xasecure.audit.destination.hdfs.config.fs.azure.shellkeyprovider.script,

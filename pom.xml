@@ -15,9 +15,15 @@
         <hadoop.version>3.3.1</hadoop.version>
         <hive3.version>3.1.2</hive3.version>
         <hive.version>2.3.9</hive.version>
+        <hutool.version>4.5.16</hutool.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-client</artifactId>
