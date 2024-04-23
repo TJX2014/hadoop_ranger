@@ -69,7 +69,11 @@ hive-server2:
 nohup java -Djava.library.path=$HADOOP_HOME/lib/native -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp $HIVE_HOME/conf:$HIVE_HOME/lib/*:`hadoop classpath` org.apache.hive.service.server.HiveServer2 > /tmp/hs2.log &
 
 启动ranger:
-docker run -itd -v C:\usr\docker\ranger-2.4.0-admin\install.properties:/opt/ranger-2.1.1-admin/install.properties -v C:\Users\Allen\.m2\repository\com\mysql\mysql-connector-j\8.0.31\mysql-connector-j-8.0.31.jar:/mnt/c/Users/Allen/.m2/repository/com/mysql/mysql-connector-j/8.0.31/mysql-connector-j-8.0.31.jar -p 6080:6080 -p 5006:5005 --name=ranger deploy.deepexi.com/fastdata/ranger:157575
+create user 'rangeradmin'@'%' identified with mysql_native_password by '123456';
+grant all privileges on *.* to 'rangeradmin'@'%' with grant option;
+flush privileges;
+
+docker run -itd -v /root/install.properties:/opt/ranger-2.1.1-admin/install.properties -v /root/mysql-connector-j-8.0.31.jar:/opt/8.0.31/mysql-connector-j-8.0.31.jar -p 6080:6080 -p 5006:5005 --name=ranger1 ranger:157575
 
 hdfs官方安装包开启ranger-hdfs缺少的包:
 scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-hdfs-plugin/2.4.0/ranger-hdfs-plugin-2.4.0.jar  k8s-node1:/opt/hadoop-3.1.1/share/hadoop/hdfs/

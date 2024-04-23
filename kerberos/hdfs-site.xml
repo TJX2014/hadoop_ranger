@@ -92,4 +92,9 @@
         <name>fs.permissions.umask-mode</name>
         <value>027</value>
     </property>
+
+    <property>
+        <name>ipc.client.fallback-to-simple-auth-allowed</name>
+        <value>true</value>
+    </property>
 </configuration>

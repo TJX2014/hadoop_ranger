@@ -1,4 +1,4 @@
-package org.example;
+package org.test;
 
 import cn.hutool.core.util.HexUtil;
 
