@@ -50,7 +50,7 @@ client:
 java -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf -Dzookeeper.server.principal=zookeeper/k8s-node1@HADOOP.COM -cp "$ZOOKEEPER_HOME/lib/*" org.apache.zookeeper.ZooKeeperMain
 
 配置hive hms
-docker run -itd -e MYSQL_ROOT_PASSWORD=123456 -p 3307:3306 -v /opt/apache-hive-3.1.2-bin/mysql-volume:/var/lib/mysql mysql:8.0.19
+docker run -itd -e MYSQL_ROOT_PASSWORD=123456 -p 3307:3306 -v /root/mysql:/etc/mysql -v /opt/apache-hive-3.1.2-bin/mysql-volume:/var/lib/mysql mysql:8.0.19
 
 export HADOOP_HOME=/opt/hadoop-3.3.1
 export HIVE_HOME=/opt/apache-hive-3.1.2-bin
@@ -73,7 +73,8 @@ create user 'rangeradmin'@'%' identified with mysql_native_password by '123456';
 grant all privileges on *.* to 'rangeradmin'@'%' with grant option;
 flush privileges;
 
-docker run -itd -v /root/install.properties:/opt/ranger-2.1.1-admin/install.properties -v /root/mysql-connector-j-8.0.31.jar:/opt/8.0.31/mysql-connector-j-8.0.31.jar -p 6080:6080 -p 5006:5005 --name=ranger1 ranger:157575
+docker run -itd -v /root/install.properties:/opt/ranger-2.1.1-admin/install.properties -v /root/mysql-connector-j-8.0.31.jar:/opt/8.0.31/mysql-connector-j-8.0.31.jar -p 6080:6080 -p 5006:5005 --security-opt seccomp=unconfined --name=ranger ranger:157575
+--security-opt seccomp=unconfined
 
 hdfs官方安装包开启ranger-hdfs缺少的包:
 scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-hdfs-plugin/2.4.0/ranger-hdfs-plugin-2.4.0.jar  k8s-node1:/opt/hadoop-3.1.1/share/hadoop/hdfs/
