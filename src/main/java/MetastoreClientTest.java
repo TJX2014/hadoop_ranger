@@ -1,5 +1,6 @@
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 
@@ -16,7 +17,10 @@ public class MetastoreClientTest {
     Configuration conf = new Configuration();
     conf.set("hive.metastore.uris", "thrift://10.201.0.213:9093");
     conf.set("hive.metastore.sasl.enabled", "true");
+    conf.set("hive.metastore.kerberos.principal", "hive-metastore/k8s-node1@HADOOP.COM");
     conf.set("hadoop.security.authentication", "kerberos");
+//    conf.set("hadoop.rpc.protection", "integrity");
+//    conf.set("hadoop.rpc.protection", "authentication");
     String krb5Conf = System.getenv(KRB5_CONF);
     String krb5Principal = System.getenv(KRB5_PRINCIPAL);
     String krb5Keytab = System.getenv(KRB5_KEYTAB);
@@ -37,6 +41,13 @@ public class MetastoreClientTest {
     HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
     System.out.println("connect cost:" + (System.currentTimeMillis()-begin) + "ms");
     List<String> dbs = metaStoreClient.getAllDatabases("hive");
+
+    Catalog catalog = metaStoreClient.getCatalog("hive");
+
+    Catalog newCatalog = new Catalog();
+    newCatalog.setName("testcatalog");
+    newCatalog.setLocationUri("/usr/hive3/warehouse");
+    metaStoreClient.createCatalog(newCatalog);
     System.out.println("dbs:" + dbs);
   }
 }

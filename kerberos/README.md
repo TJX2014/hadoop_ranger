@@ -62,7 +62,7 @@ schematool -initSchema -dbType mysql
 启动hive
 hive-metastore:
 nohup hive --service metastore > /tmp/metastore.log &
-nohup java -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.metastore.HiveMetaStore > /tmp/hms.log &
+nohup java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.metastore.HiveMetaStore > /tmp/hms.log &
 hive-client:
 java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.cli.CliDriver
 hive-server2:
