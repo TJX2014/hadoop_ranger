@@ -66,7 +66,7 @@ nohup java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -c
 hive-client:
 java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.cli.CliDriver
 hive-server2:
-nohup java -Djava.library.path=$HADOOP_HOME/lib/native -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp $HIVE_HOME/conf:$HIVE_HOME/lib/*:`hadoop classpath` org.apache.hive.service.server.HiveServer2 > /tmp/hs2.log &
+nohup java -Djava.library.path=$HADOOP_HOME/lib/native -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001 -cp $HIVE_HOME/conf:$HIVE_HOME/lib/*:`hadoop classpath` org.apache.hive.service.server.HiveServer2 > /tmp/hs2.log &
 
 启动ranger:
 create user 'rangeradmin'@'%' identified with mysql_native_password by '123456';
@@ -83,13 +83,19 @@ scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-plugins-audit/2.4
 scp /mnt/c/Users/Allen/.m2/repository/com/kstruct/gethostname4j/1.0.0/gethostname4j-1.0.0.jar  k8s-node1:/opt/hadoop-3.1.1/share/hadoop/hdfs/
 scp /mnt/c/Users/Allen/.m2/repository/net/java/dev/jna/jna/5.7.0/jna-5.7.0.jar  k8s-node1:/opt/hadoop-3.1.1/share/hadoop/hdfs/
 
+scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-plugins-common/2.4.0/ranger-plugins-common-2.4.0.jar node02:/opt/apache-hive-3.1.2-bin/lib
 scp /mnt/c/Users/Allen/.m2/repository/org/apache/ranger/ranger-hive-plugin/2.4.0/ranger-hive-plugin-2.4.0.jar k8s-node1:/opt/apache-hive-3.1.2-bin/lib
+
+spark plugin:
+/mnt/c/Users/Allen/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar
+/mnt/c/Users/Allen/.m2/repository/com/sun/jersey/jersey-bundle/1.19.3/jersey-bundle-1.19.3.jar
+/mnt/c/Users/Allen/.m2/repository/org/codehaus/jackson/jackson-jaxrs/1.9.13/jackson-jaxrs-1.9.13.jar
 
 beeline客户端
 kinit
 kinit xiaoxing/k8s-node1@HADOOP.COM -kt /tmp/xiaoxing.keytab
 beeline -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/k8s-node1@HADOOP.COM"
-beeline -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/_HOST@HADOOP.COM"
+beeline -u "jdbc:hive2://node02:10000/test1;principal=hive-server2/_HOST@HADOOP.COM"
 direct:
 beeline -u "jdbc:hive2://k8s-node1:10000/;principal=hive-server2/_HOST@HADOOP.COM"
 java -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/*:/opt/apache-hive-3.1.2-bin/lib/hive-beeline-3.1.2.jar org.apache.hive.beeline.BeeLine -u "jdbc:hive2://k8s-node1:10000/test1;principal=hive-server2/_HOST@HADOOP.COM"
