@@ -11,19 +11,20 @@ import org.apache.spark.sql.catalyst.catalog.CatalogTable;
 import org.apache.spark.sql.catalyst.catalog.CatalogTableType;
 import org.apache.spark.sql.connector.catalog.*;
 import org.apache.spark.sql.connector.expressions.Transform;
+import org.apache.spark.sql.execution.datasources.text.TextFileFormat;
+import org.apache.spark.sql.execution.datasources.v2.text.TextTable;
 import org.apache.spark.sql.hive.HiveExternalCatalog;
 import org.apache.spark.sql.internal.SQLConf;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.util.CaseInsensitiveStringMap;
 import scala.Option;
+import scala.collection.Seq;
 import scala.collection.immutable.HashMap;
 import scala.collection.mutable.ArrayBuffer;
 import scala.collection.mutable.ArraySeq;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class HiveCatalog implements SupportsNamespaces, TableCatalog, SQLConfHelper {
 
@@ -34,6 +35,10 @@ public class HiveCatalog implements SupportsNamespaces, TableCatalog, SQLConfHel
 //    SparkSession.active().conf();
 //    HiveExternalCatalog catalog = new HiveExternalCatalog(new SparkConf(), new Configuration());
 //    System.out.println(catalog);
+
+    List<String> res = Arrays.asList("aaa");
+    Seq<String> result = scala.collection.JavaConverters.asScalaIterator(res.iterator()).toSeq();
+    System.out.println(result);
 
     List<String> inputs = new ArrayList<>(2);
     inputs.add("aaa1");
@@ -71,7 +76,16 @@ public class HiveCatalog implements SupportsNamespaces, TableCatalog, SQLConfHel
 
   @Override
   public Identifier[] listTables(String[] strings) throws NoSuchNamespaceException {
-    return new Identifier[0];
+    Seq<String> tableSeq;
+    if (strings.length > 0) {
+      String ns = strings[0];
+      tableSeq = this.catalog.listTables(ns);
+    } else {
+      tableSeq = this.catalog.listTables("*");
+    }
+
+    Collection<String> tables = scala.collection.JavaConversions.asJavaCollection(tableSeq);
+    return tables.stream().map(t -> Identifier.of(strings, t)).collect(Collectors.toList()).toArray(new Identifier[0]);
   }
 
   @Override
@@ -79,13 +93,22 @@ public class HiveCatalog implements SupportsNamespaces, TableCatalog, SQLConfHel
     String db = identifier.namespace()[0];
     String table = identifier.name();
     CatalogTable catalogTable = this.catalog.getTable(db, table);
-    return new V1Table(catalogTable);
+    SparkSession session = SparkSession.getActiveSession().getOrElse(null);
+    CaseInsensitiveStringMap options = new CaseInsensitiveStringMap(
+        scala.collection.JavaConversions.mapAsJavaMap(catalogTable.properties())
+    );
+
+    List<String> res = Arrays.asList(catalogTable.location().toString());
+    Seq<String> paths = scala.collection.JavaConverters.asScalaIterator(res.iterator()).toSeq();
+
+    return new TextTable(catalogTable.qualifiedName(),
+            session, options, paths, Option.apply(catalogTable.schema()), TextFileFormat.class);
   }
 
   @Override
   public Table createTable(Identifier identifier, StructType schema, Transform[] transforms, Map<String, String> properties) throws TableAlreadyExistsException, NoSuchNamespaceException {
     boolean isExternal = properties.containsKey(TableCatalog.PROP_EXTERNAL);
-    Optional<String> location = Optional.of(properties.get(TableCatalog.PROP_LOCATION));
+    Optional<String> location = Optional.ofNullable(properties.get(TableCatalog.PROP_LOCATION));
     CatalogTableType tableType;
     if (isExternal || location.isPresent()) {
       tableType = CatalogTableType.EXTERNAL();
