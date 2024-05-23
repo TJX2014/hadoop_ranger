@@ -1,0 +1,1 @@
+grant select ON TABLE test13.aa1 to USER xiaoming with grant option

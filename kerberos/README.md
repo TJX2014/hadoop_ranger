@@ -42,6 +42,11 @@ nohup java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -c
 查看根目录hadoop默认acl
 hdfs dfs -getfacl /
 
+export HADOOP_HOME=/opt/hadoop-3.3.1
+export HIVE_HOME=/opt/apache-hive-3.1.2-bin
+export PATH=$HADOOP_HOME/bin:$HIVE_HOME/bin:$PATH
+export ZOOKEEPER_HOME=/opt/apache-zookeeper-3.8.4-bin
+
 启动zookeeper:
 cd $ZOOKEEPER_HOME
 server:
@@ -51,10 +56,6 @@ java -Djava.security.auth.login.config=$ZOOKEEPER_HOME/conf/zookeeper_jaas.conf 
 
 配置hive hms
 docker run -itd -e MYSQL_ROOT_PASSWORD=123456 -p 3307:3306 -v /root/mysql:/etc/mysql -v /opt/apache-hive-3.1.2-bin/mysql-volume:/var/lib/mysql mysql:8.0.19
-
-export HADOOP_HOME=/opt/hadoop-3.3.1
-export HIVE_HOME=/opt/apache-hive-3.1.2-bin
-export PATH=$HADOOP_HOME/bin:$HIVE_HOME/bin:$PATH
 
 初始化schema:
 schematool -initSchema -dbType mysql
@@ -66,7 +67,7 @@ nohup java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -c
 hive-client:
 java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000 -cp `hadoop classpath`:$HIVE_HOME/conf:$HIVE_HOME/lib/* org.apache.hadoop.hive.cli.CliDriver
 hive-server2:
-nohup java -Djava.library.path=$HADOOP_HOME/lib/native -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001 -cp $HIVE_HOME/conf:$HIVE_HOME/lib/*:`hadoop classpath` org.apache.hive.service.server.HiveServer2 > /tmp/hs2.log &
+nohup java -Djava.library.path=$HADOOP_HOME/lib/native -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -cp $HIVE_HOME/conf:$HIVE_HOME/lib/*:`hadoop classpath` org.apache.hive.service.server.HiveServer2 > /tmp/hs2.log &
 
 启动ranger:
 create user 'rangeradmin'@'%' identified with mysql_native_password by '123456';
