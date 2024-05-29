@@ -1,0 +1,15 @@
+bin/containerd config default > config.toml
+```edit:
+sandbox_image = "node02:5000/pause:3.9"
+```
+bin/containerd --config ./config.toml > "/tmp/containerd.log" 2>&1 &
+bin/ctr image pull --plain-http=true node02:5000/pause:3.9
+bin/ctr image pull docker.io/library/nginx:latest
+mv /tmp/runc.amd64 /usr/local/bin/runc
+bin/ctr run -it node02:5000/pause:3.9 bash
+
+ls namespaces:
+bin/ctr ns ls
+
+ls container in ns:
+bin/ctr -n k8s.io c ls

@@ -18,17 +18,6 @@ kube-controller:
 kube-scheduler:
 ./kube-scheduler --v=3 --config=/tmp/kube-scheduler.yaml --feature-gates=AllAlpha=false --authentication-kubeconfig /var/run/kubernetes/scheduler.kubeconfig --authorization-kubeconfig /var/run/kubernetes/scheduler.kubeconfig --master=https://localhost:6443 > "/tmp/kube-scheduler.log" 2>&1 &
 
-containerd:
-bin/containerd config default > config.toml
-```edit:
-sandbox_image = "node02:5000/pause:3.9"
-```
-bin/containerd --config ./config.toml > "/tmp/containerd.log" 2>&1 &
-bin/ctr image pull --plain-http=true node02:5000/pause:3.9
-bin/ctr image pull docker.io/library/nginx:latest
-mv /tmp/runc.amd64 /usr/local/bin/runc
-bin/ctr run -it node02:5000/pause:3.9 bash
-
 alias kubectl='/opt/k8s/kubectl --kubeconfig "/var/run/kubernetes/admin.kubeconfig"'
 
 ./kubectl --kubeconfig "/var/run/kubernetes/admin.kubeconfig" create clusterrolebinding kube-apiserver-kubelet-admin --clusterrole=system:kubelet-api-admin --user=kube-apiserver
