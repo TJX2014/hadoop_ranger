@@ -1,0 +1,5 @@
+list namespaces:
+etcdctl get --keys-only --prefix "/registry/namespaces"
+
+delete ns:
+etcdctl del /registry/namespaces/
