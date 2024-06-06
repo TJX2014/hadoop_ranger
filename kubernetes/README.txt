@@ -1,4 +1,7 @@
 export GO_OUT=_output/local/bin/linux/amd64
+export GO_OUT=_output/local/bin/darwin/amd64/
+
+make -C . WHAT="cmd/kubectl cmd/kube-apiserver cmd/kube-controller-manager cmd/cloud-controller-manager cmd/kubelet cmd/kube-proxy cmd/kube-scheduler"
 
 export START_MODE=nokubelet
 export REUSE_CERTS=true
@@ -15,45 +18,58 @@ mkdir ${CERT_DIR}
 
 openssl req -x509 -sha256 -new -nodes -days 365 -newkey rsa:2048 -keyout "${CERT_DIR}/server-ca.key" -out "${CERT_DIR}/server-ca.crt" -subj "/C=xx/ST=x/L=x/O=x/OU=x/CN=ca/emailAddress=x/"
 
-echo '{"signing":{"default":{"expiry":"43800h","usages":["signing","key encipherment","server auth"]}}}' > ${CERT_DIR}/server-ca-config.json
-
-cp ${CERT_DIR}/server-ca.key ${CERT_DIR}/client-ca.key
-cp ${CERT_DIR}/server-ca.crt ${CERT_DIR}/client-ca.crt
-cp ${CERT_DIR}/server-ca-config.json ${CERT_DIR}/client-ca-config.json
-
-cd ${CERT_DIR}
-
-// serving
-echo '{"CN":"kubernetes.default","hosts":["kubernetes.default.svc","localhost","10.201.0.112","node02","10.0.0.1"],"key":{"algo":"rsa","size":2048}}' | cfssl gencert -ca=server-ca.crt -ca-key=server-ca.key -config=server-ca-config.json - | cfssljson -bare serving-kube-apiserver
-
-mv "serving-kube-apiserver-key.pem" "serving-kube-apiserver.key"
-mv "serving-kube-apiserver.pem" "serving-kube-apiserver.crt"
-rm "serving-kube-apiserver.csr"
-
-// client
-kube-apiserver:
-echo '{"CN":"kube-apiserver","names":[],"hosts":[""],"key":{"algo":"rsa","size":2048}}' | cfssl gencert -ca=client-ca.crt -ca-key=client-ca.key -config=client-ca-config.json - | cfssljson -bare client-kube-apiserver
-
-mv "client-kube-apiserver-key.pem" "client-kube-apiserver.key"
-mv "client-kube-apiserver.pem" "client-kube-apiserver.crt"
-rm "client-kube-apiserver.csr"
-
-create_client_certkey "" "${CERT_DIR}" 'client-ca' controller system:kube-controller-manager
-
-create_signing_certkey "" "${CERT_DIR}" request-header '"client auth"'
-create_client_certkey "" "${CERT_DIR}" request-header-ca auth-proxy system:auth-proxy
-
 inspect crt:
 echo "xxx" | base64 -d > /tmp/client.crt
 openssl x509 -in /tmp/client.crt -text
 
-nohup etcd --advertise-client-urls http://0.0.0.0:2379 --data-dir /opt/k8s/etcd_data --listen-client-urls http://0.0.0.0:2379 --log-level=warn 2> "/tmp/etcd.log" >/dev/null &
+nohup etcd --advertise-client-urls http://0.0.0.0:2379 --data-dir /tmp/etcd_data --listen-client-urls http://0.0.0.0:2379 --log-level=warn 2> "/tmp/etcd.log" >/dev/null &
+
+cat <<EOF > /tmp/kube_egress_selector_configuration.yaml
+apiVersion: apiserver.k8s.io/v1beta1
+kind: EgressSelectorConfiguration
+egressSelections:
+- name: cluster
+  connection:
+    proxyProtocol: Direct
+- name: controlplane
+  connection:
+    proxyProtocol: Direct
+- name: etcd
+  connection:
+    proxyProtocol: Direct
+EOF
 
 kube-apiserver:
+export SERVICE_ACCOUNT_KEY=/tmp/kube-serviceaccount.key
+openssl genrsa -out "${SERVICE_ACCOUNT_KEY}" 2048 2>/dev/null
+
+cat <<EOF > /tmp/kube_egress_selector_configuration.yaml
+apiVersion: apiserver.k8s.io/v1beta1
+kind: EgressSelectorConfiguration
+egressSelections:
+- name: cluster
+  connection:
+    proxyProtocol: Direct
+- name: controlplane
+  connection:
+    proxyProtocol: Direct
+- name: etcd
+  connection:
+    proxyProtocol: Direct
+EOF
+
+cat <<EOF > /tmp/kube-audit-policy-file
+# Log all requests at the Metadata level.
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+- level: Metadata
+EOF
+
 $GO_OUT/kube-apiserver --authorization-mode=Node,RBAC  --cloud-provider= --cloud-config=   --v=3 --vmodule= --audit-policy-file=/tmp/kube-audit-policy-file --audit-log-path=/tmp/kube-apiserver-audit.log --authorization-webhook-config-file= --authentication-token-webhook-config-file= --cert-dir=${CERT_DIR} --egress-selector-config-file=/tmp/kube_egress_selector_configuration.yaml --client-ca-file=${CERT_DIR}/client-ca.crt --kubelet-client-certificate=${CERT_DIR}/client-kube-apiserver.crt --kubelet-client-key=${CERT_DIR}/client-kube-apiserver.key --service-account-key-file=/tmp/kube-serviceaccount.key --service-account-lookup=true --service-account-issuer=https://kubernetes.default.svc --service-account-jwks-uri=https://kubernetes.default.svc/openid/v1/jwks --service-account-signing-key-file=/tmp/kube-serviceaccount.key --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,Priority,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,NodeRestriction --disable-admission-plugins= --admission-control-config-file= --bind-address=0.0.0.0 --secure-port=6443 --tls-cert-file=${CERT_DIR}/serving-kube-apiserver.crt --tls-private-key-file=${CERT_DIR}/serving-kube-apiserver.key --storage-backend=etcd3 --storage-media-type=application/vnd.kubernetes.protobuf --etcd-servers=http://127.0.0.1:2379 --service-cluster-ip-range=10.0.0.0/24 --feature-gates=AllAlpha=false --external-hostname=localhost --requestheader-username-headers=X-Remote-User --requestheader-group-headers=X-Remote-Group --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-client-ca-file=${CERT_DIR}/request-header-ca.crt --requestheader-allowed-names=system:auth-proxy --proxy-client-cert-file=${CERT_DIR}/client-auth-proxy.crt --proxy-client-key-file=${CERT_DIR}/client-auth-proxy.key --cors-allowed-origins="/127.0.0.1(:[0-9]+)?$,/localhost(:[0-9]+)?$" > "/tmp/apiserver.log" 2>&1 &
 
 kube-controller:
-$GO_OUT/kube-controller-manager --v=3 --vmodule= --service-account-private-key-file=/tmp/kube-serviceaccount.key --service-cluster-ip-range=10.0.0.0/24 --root-ca-file=/var/run/kubernetes/server-ca.crt --cluster-signing-cert-file=/var/run/kubernetes/client-ca.crt --cluster-signing-key-file=/var/run/kubernetes/client-ca.key --enable-hostpath-provisioner=false --pvclaimbinder-sync-period=15s --feature-gates=AllAlpha=false --cloud-provider= --cloud-config= --configure-cloud-routes=true --authentication-kubeconfig /var/run/kubernetes/controller.kubeconfig --authorization-kubeconfig /var/run/kubernetes/controller.kubeconfig --kubeconfig /var/run/kubernetes/controller.kubeconfig --use-service-account-credentials --controllers=* --leader-elect=false --cert-dir=/var/run/kubernetes --master=https://localhost:6443 > "/tmp/kube-controller.log" 2>&1 &
+$GO_OUT/kube-controller-manager --v=3 --vmodule= --service-account-private-key-file=/tmp/kube-serviceaccount.key --service-cluster-ip-range=10.0.0.0/24 --root-ca-file=${CERT_DIR}/server-ca.crt --cluster-signing-cert-file=${CERT_DIR}/client-ca.crt --cluster-signing-key-file=${CERT_DIR}/client-ca.key --enable-hostpath-provisioner=false --pvclaimbinder-sync-period=15s --feature-gates=AllAlpha=false --cloud-provider= --cloud-config= --configure-cloud-routes=true --authentication-kubeconfig ${CERT_DIR}/controller.kubeconfig --authorization-kubeconfig ${CERT_DIR}/controller.kubeconfig --kubeconfig ${CERT_DIR}/controller.kubeconfig --use-service-account-credentials --controllers=* --leader-elect=false --cert-dir=${CERT_DIR} --master=https://localhost:6443 > "/tmp/kube-controller.log" 2>&1 &
 
 kube-scheduler:
 ./kube-scheduler --v=3 --config=/tmp/kube-scheduler.yaml --feature-gates=AllAlpha=false --authentication-kubeconfig /var/run/kubernetes/scheduler.kubeconfig --authorization-kubeconfig /var/run/kubernetes/scheduler.kubeconfig --master=https://localhost:6443 > "/tmp/kube-scheduler.log" 2>&1 &
