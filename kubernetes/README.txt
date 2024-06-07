@@ -72,19 +72,54 @@ kube-controller:
 $GO_OUT/kube-controller-manager --v=3 --vmodule= --service-account-private-key-file=/tmp/kube-serviceaccount.key --service-cluster-ip-range=10.0.0.0/24 --root-ca-file=${CERT_DIR}/server-ca.crt --cluster-signing-cert-file=${CERT_DIR}/client-ca.crt --cluster-signing-key-file=${CERT_DIR}/client-ca.key --enable-hostpath-provisioner=false --pvclaimbinder-sync-period=15s --feature-gates=AllAlpha=false --cloud-provider= --cloud-config= --configure-cloud-routes=true --authentication-kubeconfig ${CERT_DIR}/controller.kubeconfig --authorization-kubeconfig ${CERT_DIR}/controller.kubeconfig --kubeconfig ${CERT_DIR}/controller.kubeconfig --use-service-account-credentials --controllers=* --leader-elect=false --cert-dir=${CERT_DIR} --master=https://localhost:6443 > "/tmp/kube-controller.log" 2>&1 &
 
 kube-scheduler:
-./kube-scheduler --v=3 --config=/tmp/kube-scheduler.yaml --feature-gates=AllAlpha=false --authentication-kubeconfig /var/run/kubernetes/scheduler.kubeconfig --authorization-kubeconfig /var/run/kubernetes/scheduler.kubeconfig --master=https://localhost:6443 > "/tmp/kube-scheduler.log" 2>&1 &
+cat <<EOF > /tmp/kube-scheduler.yaml
+apiVersion: kubescheduler.config.k8s.io/v1beta2
+kind: KubeSchedulerConfiguration
+clientConnection:
+  kubeconfig: ${CERT_DIR}/scheduler.kubeconfig
+leaderElection:
+  leaderElect: false
+EOF
+
+$GO_OUT/kube-scheduler --v=3 --config=/tmp/kube-scheduler.yaml --feature-gates=AllAlpha=false --authentication-kubeconfig ${CERT_DIR}/scheduler.kubeconfig --authorization-kubeconfig ${CERT_DIR}/scheduler.kubeconfig --master=https://localhost:6443 > "/tmp/kube-scheduler.log" 2>&1 &
 
 alias kubectl='/opt/k8s/kubectl --kubeconfig "/var/run/kubernetes/admin.kubeconfig"'
 
-./kubectl --kubeconfig "/var/run/kubernetes/admin.kubeconfig" create clusterrolebinding kube-apiserver-kubelet-admin --clusterrole=system:kubelet-api-admin --user=kube-apiserver
+./kubectl --kubeconfig "${CERT_DIR}/admin.kubeconfig" create clusterrolebinding kube-apiserver-kubelet-admin --clusterrole=system:kubelet-api-admin --user=kube-apiserver
 
-./kubectl --kubeconfig "/var/run/kubernetes/admin.kubeconfig" create clusterrolebinding kubelet-csr --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient --group=system:nodes
+./kubectl --kubeconfig "${CERT_DIR}/admin.kubeconfig" create clusterrolebinding kubelet-csr --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient --group=system:nodes
 
 kubelet:
 cni:
 /opt/cni
 /opt/cni/bin/loopback
-./kubelet --v=3 --vmodule= --container-runtime=remote --hostname-override=127.0.0.1 --cloud-provider= --cloud-config= --bootstrap-kubeconfig=/var/run/kubernetes/kubelet.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=/var/run/kubernetes/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml > "/tmp/kubelet.log" 2>&1 &
+
+export HOSTNAME_OVERRIDE=node02
+rm -fr "/var/lib/kubelet/pki" "${CERT_DIR}/kubelet-rotated.kubeconfig"
+
+$GO_OUT/kubelet --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml > "/tmp/kubelet.log" 2>&1 &
+
+kube-proxy:
+cat <<EOF > /tmp/kube-proxy_${HOSTNAME_OVERRIDE}.yaml
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+clientConnection:
+  kubeconfig: ${CERT_DIR}/kube-proxy_${HOSTNAME_OVERRIDE}.kubeconfig
+hostnameOverride: ${HOSTNAME_OVERRIDE}
+mode: ${KUBE_PROXY_MODE}
+conntrack:
+# Skip setting sysctl value "net.netfilter.nf_conntrack_max"
+  maxPerCore: 0
+# Skip setting "net.netfilter.nf_conntrack_tcp_timeout_established"
+  tcpEstablishedTimeout: 0s
+# Skip setting "net.netfilter.nf_conntrack_tcp_timeout_close"
+  tcpCloseWaitTimeout: 0s
+EOF
+
+"${GO_OUT}/kube-proxy" \
+      --v=3 \
+      --config=/tmp/kube-proxy_${HOSTNAME_OVERRIDE}.yaml \
+      --master="https://node02:6443" > "/tmp/kube-proxy.log" 2>&1 &
 
 /run/docker/libcontainerd/docker-containerd.sock
 

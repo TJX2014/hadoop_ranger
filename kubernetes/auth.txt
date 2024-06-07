@@ -71,6 +71,9 @@ function create_serving_certkey {
 EOF
 }
 
+# Create CA signers
+create_signing_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" server '"client auth","server auth"'
+
 cp "${CERT_DIR}/server-ca.key" "${CERT_DIR}/client-ca.key"
 cp "${CERT_DIR}/server-ca.crt" "${CERT_DIR}/client-ca.crt"
 cp "${CERT_DIR}/server-ca-config.json" "${CERT_DIR}/client-ca-config.json"
@@ -98,6 +101,14 @@ write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "
 write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" admin
 write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" controller
 write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" scheduler
+
+# generate_kubelet_certs
+create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' kubelet_${HOSTNAME_OVERRIDE} "system:node:${HOSTNAME_OVERRIDE}" system:nodes
+write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" kubelet_${HOSTNAME_OVERRIDE}
+
+# generate_kube-proxy_certs
+create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' kube-proxy_${HOSTNAME_OVERRIDE} system:kube-proxy system:nodes
+write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" kube-proxy_${HOSTNAME_OVERRIDE}
 
 write_client_kubeconfig() {
     local sudo=$1
