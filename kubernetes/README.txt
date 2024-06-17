@@ -126,3 +126,13 @@ EOF
 test:
 kubectl create deployment nginx --image=nginx
 kubectl expose deployment nginx --port=80 --type=NodePort
+
+kubectl -n kube-system create deployment busybox --image=registry.cn-hangzhou.aliyuncs.com/google_containers/busybox:latest -- date
+
+kubectl debug -n kube-system -it metrics-server-7865fc7db6-fvnwp --copy-to=myapp-debug3 --container=metrics-server --image=node02:5000/metrics-server:v3 -- sh
+
+registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server:v0.7.1
+
+/metrics-server --cert-dir=/tmp --secure-port=10250 --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --kubelet-use-node-status-port --metric-resolution=15s
+
+curl -v --cacert /tmp/apiserver.key --cert /tmp/apiserver.crt https://10.0.0.1:443/api/v1/namespaces/kube-system/configmaps/extension-apiserver-authentication
