@@ -22,7 +22,7 @@ authentication:
     clientCAFile: "/tmp/cert11/client-ca.crt"
 authorization:
   mode: Webhook
-clusterDNS: [ "10.0.0.10" ]
+clusterDNS: [ "12.0.0.10" ]
 clusterDomain: "cluster.local"
 evictionHard:
   memory.available: "100Mi"

@@ -66,10 +66,10 @@ rules:
 - level: Metadata
 EOF
 
-$GO_OUT/kube-apiserver --authorization-mode=Node,RBAC  --cloud-provider= --cloud-config=   --v=3 --vmodule= --audit-policy-file=/tmp/kube-audit-policy-file --audit-log-path=/tmp/kube-apiserver-audit.log --authorization-webhook-config-file= --authentication-token-webhook-config-file= --cert-dir=${CERT_DIR} --egress-selector-config-file=/tmp/kube_egress_selector_configuration.yaml --client-ca-file=${CERT_DIR}/client-ca.crt --kubelet-client-certificate=${CERT_DIR}/client-kube-apiserver.crt --kubelet-client-key=${CERT_DIR}/client-kube-apiserver.key --service-account-key-file=/tmp/kube-serviceaccount.key --service-account-lookup=true --service-account-issuer=https://kubernetes.default.svc --service-account-jwks-uri=https://kubernetes.default.svc/openid/v1/jwks --service-account-signing-key-file=/tmp/kube-serviceaccount.key --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,Priority,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,NodeRestriction --disable-admission-plugins= --admission-control-config-file= --bind-address=0.0.0.0 --secure-port=6443 --tls-cert-file=${CERT_DIR}/serving-kube-apiserver.crt --tls-private-key-file=${CERT_DIR}/serving-kube-apiserver.key --storage-backend=etcd3 --storage-media-type=application/vnd.kubernetes.protobuf --etcd-servers=http://127.0.0.1:2379 --service-cluster-ip-range=10.0.0.0/24 --feature-gates=AllAlpha=false --external-hostname=localhost --requestheader-username-headers=X-Remote-User --requestheader-group-headers=X-Remote-Group --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-client-ca-file=${CERT_DIR}/request-header-ca.crt --requestheader-allowed-names=system:auth-proxy --proxy-client-cert-file=${CERT_DIR}/client-auth-proxy.crt --proxy-client-key-file=${CERT_DIR}/client-auth-proxy.key --cors-allowed-origins="/127.0.0.1(:[0-9]+)?$,/localhost(:[0-9]+)?$" > "/tmp/apiserver.log" 2>&1 &
+$GO_OUT/kube-apiserver --authorization-mode=Node,RBAC  --cloud-provider= --cloud-config=   --v=3 --vmodule= --audit-policy-file=/tmp/kube-audit-policy-file --audit-log-path=/tmp/kube-apiserver-audit.log --authorization-webhook-config-file= --authentication-token-webhook-config-file= --cert-dir=${CERT_DIR} --egress-selector-config-file=/tmp/kube_egress_selector_configuration.yaml --client-ca-file=${CERT_DIR}/client-ca.crt --kubelet-client-certificate=${CERT_DIR}/client-kube-apiserver.crt --kubelet-client-key=${CERT_DIR}/client-kube-apiserver.key --service-account-key-file=${SERVICE_ACCOUNT_KEY} --service-account-lookup=true --service-account-issuer=https://kubernetes.default.svc --service-account-jwks-uri=https://kubernetes.default.svc/openid/v1/jwks --service-account-signing-key-file=${SERVICE_ACCOUNT_KEY} --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,Priority,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,NodeRestriction --disable-admission-plugins= --admission-control-config-file= --bind-address=0.0.0.0 --secure-port=6443 --tls-cert-file=${CERT_DIR}/serving-kube-apiserver.crt --tls-private-key-file=${CERT_DIR}/serving-kube-apiserver.key --storage-backend=etcd3 --storage-media-type=application/vnd.kubernetes.protobuf --etcd-servers=http://127.0.0.1:2379 --service-cluster-ip-range=12.0.0.1/24 --feature-gates=AllAlpha=false --external-hostname=localhost --requestheader-username-headers=X-Remote-User --requestheader-group-headers=X-Remote-Group --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-client-ca-file=${CERT_DIR}/request-header-ca.crt --requestheader-allowed-names=system:auth-proxy --proxy-client-cert-file=${CERT_DIR}/client-auth-proxy.crt --proxy-client-key-file=${CERT_DIR}/client-auth-proxy.key --cors-allowed-origins="/127.0.0.1(:[0-9]+)?$,/localhost(:[0-9]+)?$" > "/tmp/apiserver.log" 2>&1 &
 
 kube-controller:
-$GO_OUT/kube-controller-manager --v=3 --vmodule= --service-account-private-key-file=/tmp/kube-serviceaccount.key --service-cluster-ip-range=10.0.0.0/24 --root-ca-file=${CERT_DIR}/server-ca.crt --cluster-signing-cert-file=${CERT_DIR}/client-ca.crt --cluster-signing-key-file=${CERT_DIR}/client-ca.key --enable-hostpath-provisioner=false --pvclaimbinder-sync-period=15s --feature-gates=AllAlpha=false --cloud-provider= --cloud-config= --configure-cloud-routes=true --authentication-kubeconfig ${CERT_DIR}/controller.kubeconfig --authorization-kubeconfig ${CERT_DIR}/controller.kubeconfig --kubeconfig ${CERT_DIR}/controller.kubeconfig --use-service-account-credentials --controllers=* --leader-elect=false --cert-dir=${CERT_DIR} --master=https://localhost:6443 > "/tmp/kube-controller.log" 2>&1 &
+$GO_OUT/kube-controller-manager --v=3 --vmodule= --service-account-private-key-file=${SERVICE_ACCOUNT_KEY} --service-cluster-ip-range=10.0.0.0/24 --root-ca-file=${CERT_DIR}/server-ca.crt --cluster-signing-cert-file=${CERT_DIR}/client-ca.crt --cluster-signing-key-file=${CERT_DIR}/client-ca.key --enable-hostpath-provisioner=false --pvclaimbinder-sync-period=15s --feature-gates=AllAlpha=false --cloud-provider= --cloud-config= --configure-cloud-routes=true --authentication-kubeconfig ${CERT_DIR}/controller.kubeconfig --authorization-kubeconfig ${CERT_DIR}/controller.kubeconfig --kubeconfig ${CERT_DIR}/controller.kubeconfig --use-service-account-credentials --controllers=* --leader-elect=false --cert-dir=${CERT_DIR} --master=https://localhost:6443 > "/tmp/kube-controller.log" 2>&1 &
 
 kube-scheduler:
 cat <<EOF > /tmp/kube-scheduler.yaml
@@ -97,7 +97,7 @@ cni:
 export HOSTNAME_OVERRIDE=node02
 rm -fr "/var/lib/kubelet/pki" "${CERT_DIR}/kubelet-rotated.kubeconfig"
 
-$GO_OUT/kubelet --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml > "/tmp/kubelet.log" 2>&1 &
+$GO_OUT/kubelet --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet_${HOSTNAME_OVERRIDE}.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml > "/tmp/kubelet.log" 2>&1 &
 
 kube-proxy:
 cat <<EOF > /tmp/kube-proxy_${HOSTNAME_OVERRIDE}.yaml
@@ -129,10 +129,16 @@ kubectl expose deployment nginx --port=80 --type=NodePort
 
 kubectl -n kube-system create deployment busybox --image=registry.cn-hangzhou.aliyuncs.com/google_containers/busybox:latest -- date
 
-kubectl debug -n kube-system -it metrics-server-7865fc7db6-fvnwp --copy-to=myapp-debug3 --container=metrics-server --image=node02:5000/metrics-server:v3 -- sh
+kubectl debug -n kube-system -it metrics-server-7865fc7db6-fvnwp --copy-to=mydebug --container=metrics-server --image=node02:5000/metrics-server:v3 -- sleep 36000
 
 registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server:v0.7.1
 
 /metrics-server --cert-dir=/tmp --secure-port=10250 --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --kubelet-use-node-status-port --metric-resolution=15s
 
+/metrics-server --kubelet-insecure-tls --bind-address=$(POD_IP) --cert-dir=/tmp --secure-port=10250 --kubelet-preferred-address-types=InternalIP,Hostname --kubelet-use-node-status-port --metric-resolution=15s
+
+--tls-cert-file=/tmp/apiserver.crt --tls-private-key-file=/tmp/apiserver.key
+
 curl -v --cacert /tmp/apiserver.key --cert /tmp/apiserver.crt https://10.0.0.1:443/api/v1/namespaces/kube-system/configmaps/extension-apiserver-authentication
+
+curl -v https://10.0.0.1:443/api/v1/namespaces/kube-system/configmaps/extension-apiserver-authentication

@@ -1,7 +1,7 @@
 export CERT_DIR=/tmp/cert11
 export API_HOST_IP=127.0.0.1
 export API_HOST=localhost
-export FIRST_SERVICE_CLUSTER_IP=10.0.0.2
+export FIRST_SERVICE_CLUSTER_IP=12.0.0.1
 export API_SECURE_PORT=6443
 export ROOT_CA_FILE=${CERT_DIR}/server-ca.crt
 

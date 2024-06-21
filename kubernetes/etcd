@@ -3,3 +3,6 @@ etcdctl get --keys-only --prefix "/registry/namespaces"
 
 delete ns:
 etcdctl del /registry/namespaces/
+
+delete keys under registry prefix:
+etcdctl del --prefix /registry
