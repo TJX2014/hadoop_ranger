@@ -1,0 +1,38 @@
+cat <<EOF > node-metrics-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-metrics
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes/metrics
+  - nodes/stats
+  - nodes/proxy
+  verbs:
+  - get
+EOF
+
+kubectl create -f node-metrics-role.yaml
+
+export MY_SA=node-metrics1
+kubectl -n default create sa ${MY_SA}
+kubectl create clusterrolebinding ${MY_SA}-rb --clusterrole=node-metrics --serviceaccount=default:${MY_SA} --namespace=default
+
+cat <<EOF > ${MY_SA}-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${MY_SA}-secret
+  namespace: default
+  annotations:
+    kubernetes.io/service-account.name: "${MY_SA}"
+type: kubernetes.io/service-account-token
+EOF
+
+kubectl create -f ${MY_SA}-secret.yaml
+export token=`kubectl -n default get secrets ${MY_SA}-secret -o go-template --template '{{index .data "token"}}' | base64 --decode`
+curl -k -H "Authorization: Bearer $token" https://node02:10250/metrics/resource
+
+curl -k --cert /tmp/cert11/client-kube-apiserver.crt --key /tmp/cert11/client-kube-apiserver.key https://node02:10250/metrics/resource

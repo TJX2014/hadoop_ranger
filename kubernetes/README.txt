@@ -153,7 +153,3 @@ curl -v --cacert /tmp/apiserver.key --cert /tmp/apiserver.crt https://10.0.0.1:4
 curl -v https://12.0.0.1:443/api/v1/namespaces/kube-system/configmaps/extension-apiserver-authentication
 
 curl -v --cacert /tmp/cert11/server-ca.crt https://node02:6443/version
-
-export token=`kubectl -n default get secrets node-metrics-secret -o go-template --template '{{index .data "token"}}' | base64 --decode`
-
-curl -k -H "Authorization: Bearer $token" https://node02:10250/metrics/resource
