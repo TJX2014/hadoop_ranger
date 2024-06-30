@@ -11,7 +11,7 @@ sandbox_image = "node02:5000/pause:3.9"
              endpoint = ["http://node02:5000"]
 
 ```
-bin/containerd --config ./config.toml > "/tmp/containerd.log" 2>&1 &
+sudo bin/containerd --config ./config.toml > "/tmp/containerd.log" 2>&1 &
 bin/ctr image pull --plain-http=true node02:5000/pause:3.9
 bin/ctr image pull docker.io/library/nginx:latest
 mv /tmp/runc.amd64 /usr/local/bin/runc

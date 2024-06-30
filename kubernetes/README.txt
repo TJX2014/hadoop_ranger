@@ -3,6 +3,8 @@ export GO_OUT=_output/local/bin/darwin/amd64/
 
 make -C . WHAT="cmd/kubectl cmd/kube-apiserver cmd/kube-controller-manager cmd/cloud-controller-manager cmd/kubelet cmd/kube-proxy cmd/kube-scheduler"
 
+make DBG=1 GOFLAGS=-v -C . WHAT="cmd/kubelet"
+
 export START_MODE=nokubelet
 export REUSE_CERTS=true
 export ALLOW_PRIVILEGED=true
@@ -101,7 +103,9 @@ ifconfig
 ifconfig cni0 down
 ip link delete cni0
 
-$GO_OUT/kubelet --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet_${HOSTNAME_OVERRIDE}.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml > "/tmp/kubelet.log" 2>&1 &
+sudo $GO_OUT/kubelet --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet_${HOSTNAME_OVERRIDE}.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml > "/tmp/kubelet.log" 2>&1 &
+
+sudo dlv --listen=:2345 --headless=true --api-version=2 exec $GO_OUT/kubelet -- --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet_${HOSTNAME_OVERRIDE}.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml
 
 kube-proxy:
 cat <<EOF > /tmp/kube-proxy_${HOSTNAME_OVERRIDE}.yaml

@@ -1,3 +1,5 @@
+cat <<EOF > /tmp/kubelet.yaml
+
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 address: "127.0.0.1"
@@ -19,7 +21,7 @@ authentication:
   webhook:
     enabled: true
   x509:
-    clientCAFile: "/tmp/cert11/client-ca.crt"
+    clientCAFile: "${CERT_DIR}/client-ca.crt"
 authorization:
   mode: Webhook
 clusterDNS: [ "12.0.0.10" ]
@@ -30,3 +32,4 @@ evictionHard:
   nodefs.inodesFree: "5%"
 featureGates:
   AllAlpha: false
+EOF
