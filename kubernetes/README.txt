@@ -5,6 +5,12 @@ make -C . WHAT="cmd/kubectl cmd/kube-apiserver cmd/kube-controller-manager cmd/c
 
 make DBG=1 GOFLAGS=-v -C . WHAT="cmd/kubelet"
 
+-gcflags= all=-N -l-asmflags=-ldflags=all=-X
+:~/kubernetes/_output/local/go/src# go install k8s.io/kubernetes/cmd/kubelet
+
+go build -o kubelet_darwin -gcflags=all=-N k8s.io/kubernetes/cmd/kubelet
+GOOS=linux GOARCH=amd64 go build -o kubelet_linux -gcflags=all=-N k8s.io/kubernetes/cmd/kubelet
+
 export START_MODE=nokubelet
 export REUSE_CERTS=true
 export ALLOW_PRIVILEGED=true
