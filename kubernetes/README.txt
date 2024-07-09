@@ -21,15 +21,6 @@ curl --retry 10 -L -o cfssljson https://github.com/cloudflare/cfssl/releases/dow
 mv cfssl cfssljson /usr/local/bin/
 chmod +x /usr/local/bin/cfssljson /usr/local/bin/cfssl
 
-export CERT_DIR=/tmp/cert11
-mkdir ${CERT_DIR}
-
-openssl req -x509 -sha256 -new -nodes -days 365 -newkey rsa:2048 -keyout "${CERT_DIR}/server-ca.key" -out "${CERT_DIR}/server-ca.crt" -subj "/C=xx/ST=x/L=x/O=x/OU=x/CN=ca/emailAddress=x/"
-
-inspect crt:
-echo "xxx" | base64 -d > /tmp/client.crt
-openssl x509 -in /tmp/client.crt -text
-
 nohup etcd --advertise-client-urls http://0.0.0.0:2379 --data-dir /tmp/etcd_data --listen-client-urls http://0.0.0.0:2379 --log-level=warn 2> "/tmp/etcd.log" >/dev/null &
 
 cat <<EOF > /tmp/kube_egress_selector_configuration.yaml
@@ -111,6 +102,8 @@ ip link delete cni0
 
 sudo $GO_OUT/kubelet --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet_${HOSTNAME_OVERRIDE}.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml > "/tmp/kubelet.log" 2>&1 &
 
+kubectl get csr
+
 sudo dlv --listen=:2345 --headless=true --api-version=2 exec $GO_OUT/kubelet -- --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet_${HOSTNAME_OVERRIDE}.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml
 
 kube-proxy:
@@ -163,3 +156,6 @@ curl -v --cacert /tmp/apiserver.key --cert /tmp/apiserver.crt https://10.0.0.1:4
 curl -v https://12.0.0.1:443/api/v1/namespaces/kube-system/configmaps/extension-apiserver-authentication
 
 curl -v --cacert /tmp/cert11/server-ca.crt https://node02:6443/version
+
+# failed to verify certificate: x509: certificate signed by unknown authority
+cp ${CERT_DIR}/server-ca.crt /etc/ssl/certs/

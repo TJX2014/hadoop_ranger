@@ -1,10 +1,3 @@
-export CERT_DIR=/tmp/cert11
-export API_HOST_IP=127.0.0.1
-export API_HOST=localhost
-export FIRST_SERVICE_CLUSTER_IP=12.0.0.1
-export API_SECURE_PORT=6443
-export ROOT_CA_FILE=${CERT_DIR}/server-ca.crt
-
 create_signing_certkey() {
     local sudo=$1
     local dest_dir=$2
@@ -70,45 +63,6 @@ function create_serving_certkey {
     rm -f "serving-${id}.csr"
 EOF
 }
-
-# Create CA signers
-create_signing_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" server '"client auth","server auth"'
-
-cp "${CERT_DIR}/server-ca.key" "${CERT_DIR}/client-ca.key"
-cp "${CERT_DIR}/server-ca.crt" "${CERT_DIR}/client-ca.crt"
-cp "${CERT_DIR}/server-ca-config.json" "${CERT_DIR}/client-ca-config.json"
-
-# Create auth proxy client ca
-create_signing_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" request-header '"client auth"'
-
-# serving cert for kube-apiserver
-create_serving_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "server-ca" kube-apiserver kubernetes.default kubernetes.default.svc "localhost" "${API_HOST_IP}" "${API_HOST}" "${FIRST_SERVICE_CLUSTER_IP}"
-
-# Create client certs signed with client-ca, given id, given CN and a number of groups
-create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' controller system:kube-controller-manager
-create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' scheduler  system:kube-scheduler
-create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' admin system:admin system:masters
-create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' kube-apiserver kube-apiserver
-
-# Create matching certificates for kube-aggregator
-create_serving_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "server-ca" kube-aggregator api.kube-public.svc "localhost" "${API_HOST_IP}"
-create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" request-header-ca auth-proxy system:auth-proxy
-
-# TODO remove masters and add rolebinding
-create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' kube-aggregator system:kube-aggregator system:masters
-write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" kube-aggregator
-
-write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" admin
-write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" controller
-write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" scheduler
-
-# generate_kubelet_certs
-create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' kubelet_${HOSTNAME_OVERRIDE} "system:node:${HOSTNAME_OVERRIDE}" system:nodes
-write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" kubelet_${HOSTNAME_OVERRIDE}
-
-# generate_kube-proxy_certs
-create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' kube-proxy_${HOSTNAME_OVERRIDE} system:kube-proxy system:nodes
-write_client_kubeconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" kube-proxy_${HOSTNAME_OVERRIDE}
 
 write_client_kubeconfig() {
     local sudo=$1

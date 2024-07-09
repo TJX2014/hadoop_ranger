@@ -1,0 +1,7 @@
+depend on coredns:
+git clone https://github.com/coredns/helm.git
+cd helm
+helm --namespace=kube-system install coredns charts/coredns
+
+dashboard:
+kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8443:443 --address=0.0.0.0
