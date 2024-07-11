@@ -106,6 +106,13 @@ kubectl get csr
 
 sudo dlv --listen=:2345 --headless=true --api-version=2 exec $GO_OUT/kubelet -- --v=3 --vmodule= --container-runtime=remote --hostname-override=${HOSTNAME_OVERRIDE} --cloud-provider= --cloud-config= --bootstrap-kubeconfig=${CERT_DIR}/kubelet_${HOSTNAME_OVERRIDE}.kubeconfig --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubeconfig=${CERT_DIR}/kubelet-rotated.kubeconfig --config=/tmp/kubelet.yaml
 
+open ip_forward:
+vim /etc/sysctl.conf
+net.ipv4.ip_forward = 1
+
+refresh:
+sysctl --system | grep forward
+
 kube-proxy:
 cat <<EOF > /tmp/kube-proxy_${HOSTNAME_OVERRIDE}.yaml
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
@@ -113,7 +120,7 @@ kind: KubeProxyConfiguration
 clientConnection:
   kubeconfig: ${CERT_DIR}/kube-proxy_${HOSTNAME_OVERRIDE}.kubeconfig
 hostnameOverride: ${HOSTNAME_OVERRIDE}
-mode: ${KUBE_PROXY_MODE}
+mode: "ipvs"
 conntrack:
 # Skip setting sysctl value "net.netfilter.nf_conntrack_max"
   maxPerCore: 0
