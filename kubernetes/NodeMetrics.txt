@@ -36,3 +36,7 @@ export token=`kubectl -n default get secrets ${MY_SA}-secret -o go-template --te
 curl -k -H "Authorization: Bearer $token" https://node02:10250/metrics/resource
 
 curl -k --cert /tmp/cert11/client-kube-apiserver.crt --key /tmp/cert11/client-kube-apiserver.key https://node02:10250/metrics/resource
+
+go build -gcflags=all=-N cmd/metrics-server/metrics-server.go
+
+./dlv --listen=:2345 --headless=true --api-version=2 exec /tmp/metrics-server -- --cert-dir=/tmp --secure-port=10250 --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --kubelet-use-node-status-port --metric-resolution=15s
