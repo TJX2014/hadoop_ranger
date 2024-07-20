@@ -39,4 +39,49 @@ curl -k --cert /tmp/cert11/client-kube-apiserver.crt --key /tmp/cert11/client-ku
 
 go build -gcflags=all=-N cmd/metrics-server/metrics-server.go
 
+cat <<EOF > Dockerfile-debug 
+FROM ubuntu:22.04
+COPY dlv metrics-server /usr/bin
+RUN apt-get update && apt-get install -y curl net-tools iputils-ping
+EOF
+
+docker build . -f Dockerfile-debug -t node02:5000/metrics-server-debug:latest
+docker push node02:5000/metrics-server-debug:latest
+
+cat <<EOF > metrics-server-debug.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: busybox
+  name: metrics-server-debug
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: busybox
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+      - command:
+        - sleep
+        - "36000"
+        image: node02:5000/metrics-server-debug:latest
+        name: busybox
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      serviceAccount: metrics-server
+      serviceAccountName: metrics-server
+EOF
+
+kubectl create -f metrics-server-debug.yaml
+
 ./dlv --listen=:2345 --headless=true --api-version=2 exec /tmp/metrics-server -- --cert-dir=/tmp --secure-port=10250 --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --kubelet-use-node-status-port --metric-resolution=15s
+
+metrics-server --cert-dir=/tmp --secure-port=10251 --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --kubelet-use-node-status-port --metric-resolution=15s --kubelet-insecure-tls
+
+inspect metrics service:
+kubectl describe apiservice v1beta1.metrics.k8s.io

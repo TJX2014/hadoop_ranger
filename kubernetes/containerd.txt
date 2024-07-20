@@ -13,11 +13,14 @@ sandbox_image = "node02:5000/pause:3.9"
 ```
 rm -rf /run/containerd/ /var/run/containerd
 
+ifconfig cni0 down
+ip link delete cni0
+
 sudo bin/containerd --config ./config.toml > "/tmp/containerd.log" 2>&1 &
 bin/ctr image pull --plain-http=true node02:5000/pause:3.9
 bin/ctr image pull docker.io/library/nginx:latest
 mv /tmp/runc.amd64 /usr/local/bin/runc
-bin/ctr run -it node02:5000/pause:3.9 bash
+bin/ctr c create node02:5000/pause:3.9 pause
 
 ls namespaces:
 bin/ctr ns ls

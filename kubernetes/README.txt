@@ -142,7 +142,9 @@ kubectl create deployment nginx --image=nginx
 kubectl expose deployment nginx --port=80 --type=NodePort
 kubectl delete deployment nginx
 
-kubectl -n kube-system create deployment busybox --image=node02:5000/busybox:latest -- sleep 3600
+kubectl -n kube-system create deployment busybox --image=node02:5000/busybox:latest -- sleep 36000
+
+kubectl -n default create deployment debug --image=node02:5000/metrics-server-debug:latest -- sleep 36000
 
 kubectl -n kube-system set image deployment/metrics-server metrics-server=node02:5000/metrics-server:v3
 

@@ -1,0 +1,15 @@
+cat <<EOF > /run/flannel/subnet.env
+FLANNEL_NETWORK=12.88.0.0/16
+FLANNEL_SUBNET=12.88.72.1/24
+FLANNEL_MTU=1450
+FLANNEL_IPMASQ=false
+EOF
+
+rm -f /run/flannel/subnet.env
+
+etcdctl put /coreos.com/network/config '{ "Network": "12.88.0.0/16", "Subnet": "12.88.0.0/16","Backend": {"Type": "vxlan"}}'
+
+ifconfig flannel.1 down
+ip link delete flannel.1
+
+$GO_OUT/flanneld-amd64 -etcd-endpoints http://node02:2379 > "/tmp/flanneld.log" 2>&1 &cat 
