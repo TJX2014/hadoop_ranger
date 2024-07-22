@@ -1,3 +1,9 @@
+make
+
+go build  -gcflags=-trimpath=/root/go/src -buildmode=pie  -o bin/containerd -ldflags '-X github.com/containerd/containerd/version.Version=v1.7.20 -X github.com/containerd/containerd/version.Revision=8fc6bcff51318944179630522a095cc9dbf9f353 -X github.com/containerd/containerd/version.Package=github.com/containerd/containerd -s -w ' -tags "urfave_cli_no_docs"  ./cmd/containerd
+
+mv /usr/local/bin/runc /usr/sbin/
+
 bin/containerd config default > config.toml
 ```edit:
 sandbox_image = "node02:5000/pause:3.9"
@@ -27,3 +33,10 @@ bin/ctr ns ls
 
 ls container in ns:
 bin/ctr -n k8s.io c ls
+
+bin/ctr i pull --plain-http=true node02:5000/metrics-server-debug:latest
+bin/ctr run -t -d node02:5000/metrics-server-debug:latest aa1 bash
+bin/ctr t exec -t --exec-id 1 aa1 bash
+bin/ctr t start aa1
+bin/ctr t rm -f aa1
+bin/ctr c rm aa1
