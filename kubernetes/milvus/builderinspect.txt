@@ -1,0 +1,281 @@
+[
+    {
+        "Id": "db008e27940bb264674c4adfd1c3859cf92aebd348ea8a83669b021dfdd10090",
+        "Created": "2024-07-27T13:40:46.224772801Z",
+        "Path": "/entrypoint.sh",
+        "Args": [
+            "make"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 5309,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-07-27T13:40:46.750995407Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:31ecc0114db7763b64a93e20c4cb1b342e27bf368a2c704f8c39e605b4d9373a",
+        "ResolvConfPath": "/var/lib/docker/containers/db008e27940bb264674c4adfd1c3859cf92aebd348ea8a83669b021dfdd10090/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/db008e27940bb264674c4adfd1c3859cf92aebd348ea8a83669b021dfdd10090/hostname",
+        "HostsPath": "/var/lib/docker/containers/db008e27940bb264674c4adfd1c3859cf92aebd348ea8a83669b021dfdd10090/hosts",
+        "LogPath": "/var/lib/docker/containers/db008e27940bb264674c4adfd1c3859cf92aebd348ea8a83669b021dfdd10090/db008e27940bb264674c4adfd1c3859cf92aebd348ea8a83669b021dfdd10090-json.log",
+        "Name": "/milvus-builder-run-b46084b142b0",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "/Users/admin/Projects/milvus/.docker/amd64-ubuntu22.04-conan:/home/milvus/.conan:rw",
+                "/Users/admin/Projects/milvus:/go/src/github.com/milvus-io/milvus:rw",
+                "/Users/admin/Projects/milvus/.docker/amd64-ubuntu22.04-ccache:/ccache:rw",
+                "/Users/admin/Projects/milvus/.docker/amd64-ubuntu22.04-go-mod:/go/pkg/mod:rw",
+                "/Users/admin/Projects/milvus/.docker/amd64-ubuntu22.04-vscode-extensions:/home/milvus/.vscode-server/extensions:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "milvus_dev",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": true,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 2147483648,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware",
+                "/sys/devices/virtual/powercap"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/880950925d9b5bdcc1db3b073a077a93356afcd4f8b454ab38bb161ff94d9825-init/diff:/var/lib/docker/overlay2/83df2e5d1d41e750ab296fe37a2c9c13f6598d87e7f050274d8370408d4538a1/diff:/var/lib/docker/overlay2/e7a377e60c0e3d70e50e39dfb59bc0e9c97db05478d25c9b157ec9f7e74cab96/diff:/var/lib/docker/overlay2/ac4d22ad709dfef5de9b7dede5dcfa4bc9a21d5a492270c186a0fdf0c6a6cffb/diff:/var/lib/docker/overlay2/840e9c306e114041a1372bc300113705243844bc5b43cb958a893feac2585018/diff:/var/lib/docker/overlay2/42f087dabfff679a30ccf70a1c42bfa82bb70646fda8d0ecfb693cfd287144d8/diff:/var/lib/docker/overlay2/f99687e2ea3d4d84d3923f74cee7ab85d1943bb17ab65c5c8cb11e346c798b97/diff:/var/lib/docker/overlay2/670bd5440ae63273b8c5a79cc0245c85f89741c83460ee2a6c247629c6660c27/diff:/var/lib/docker/overlay2/aee0e131c495eab166de80186b39f343e595867ecc4fce3ee7d46c5f6b2da5bd/diff:/var/lib/docker/overlay2/4706dc64091f423d8c0fd03ed354bd4ecd10294a6e3ba128658253d52b4f8414/diff:/var/lib/docker/overlay2/beca0b5475547bbf0255109c3e7a6d730d09e445ab5ffb1742063d6653d6a28a/diff:/var/lib/docker/overlay2/de819f18c0ae24310aea2e851051ece9498c1a723c2de2b53d79bca41a22bb43/diff:/var/lib/docker/overlay2/94406254e0926f84a866cbd732be1c430afa98e41bfc8d9a09434a787b34bf17/diff:/var/lib/docker/overlay2/d1fe912c4126b9ae82b000f4770ce94a0f0fb27957a38cef85cd8d1f89f7b886/diff",
+                "MergedDir": "/var/lib/docker/overlay2/880950925d9b5bdcc1db3b073a077a93356afcd4f8b454ab38bb161ff94d9825/merged",
+                "UpperDir": "/var/lib/docker/overlay2/880950925d9b5bdcc1db3b073a077a93356afcd4f8b454ab38bb161ff94d9825/diff",
+                "WorkDir": "/var/lib/docker/overlay2/880950925d9b5bdcc1db3b073a077a93356afcd4f8b454ab38bb161ff94d9825/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/Users/admin/Projects/milvus/.docker/amd64-ubuntu22.04-conan",
+                "Destination": "/home/milvus/.conan",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/Users/admin/Projects/milvus",
+                "Destination": "/go/src/github.com/milvus-io/milvus",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/Users/admin/Projects/milvus/.docker/amd64-ubuntu22.04-ccache",
+                "Destination": "/ccache",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/Users/admin/Projects/milvus/.docker/amd64-ubuntu22.04-go-mod",
+                "Destination": "/go/pkg/mod",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/Users/admin/Projects/milvus/.docker/amd64-ubuntu22.04-vscode-extensions",
+                "Destination": "/home/milvus/.vscode-server/extensions",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "db008e27940b",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": true,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "Tty": true,
+            "OpenStdin": true,
+            "StdinOnce": true,
+            "Env": [
+                "CONAN_USER_HOME=/home/milvus",
+                "CCACHE_DIR=/ccache",
+                "MINIO_ADDRESS=minio:9000",
+                "PULSAR_ADDRESS=pulsar://pulsar:6650",
+                "AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;",
+                "CCACHE_COMPILERCHECK=content",
+                "OS_NAME=ubuntu22.04",
+                "CCACHE_COMPRESS=1",
+                "ETCD_ENDPOINTS=etcd:2379",
+                "CCACHE_COMPRESSLEVEL=5",
+                "CCACHE_MAXSIZE=2G",
+                "PATH=/root/.cargo/bin:/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "VCPKG_FORCE_SYSTEM_BINARIES=1",
+                "GOPATH=/go",
+                "GOROOT=/usr/local/go",
+                "GO111MODULE=on"
+            ],
+            "Cmd": [
+                "make"
+            ],
+            "Image": "milvusdb/milvus-env:ubuntu22.04-20240620-5be9929",
+            "Volumes": null,
+            "WorkingDir": "/go/src/github.com/milvus-io/milvus",
+            "Entrypoint": [
+                "/entrypoint.sh"
+            ],
+            "OnBuild": null,
+            "Labels": {
+                "com.docker.compose.config-hash": "23fcacdbb935ef7b7f169aa98a8de97cdbf7ec32150ec91fb2f3a8013293cd03",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:31ecc0114db7763b64a93e20c4cb1b342e27bf368a2c704f8c39e605b4d9373a",
+                "com.docker.compose.oneoff": "True",
+                "com.docker.compose.project": "milvus",
+                "com.docker.compose.project.config_files": "/Users/admin/Projects/milvus/docker-compose.yml",
+                "com.docker.compose.project.working_dir": "/Users/admin/Projects/milvus",
+                "com.docker.compose.service": "builder",
+                "com.docker.compose.slug": "b46084b142b02a5618b57670c8aa788390c8c8524847eb7e72822565c825475d",
+                "com.docker.compose.version": "2.26.1",
+                "org.opencontainers.image.ref.name": "ubuntu",
+                "org.opencontainers.image.version": "22.04"
+            }
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "73413a34940b61b5dd08fc6aa0e15646d11535cd4f3f3eb0c9f14e4adb18970b",
+            "SandboxKey": "/var/run/docker/netns/73413a34940b",
+            "Ports": {},
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "",
+            "Gateway": "",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "",
+            "IPPrefixLen": 0,
+            "IPv6Gateway": "",
+            "MacAddress": "",
+            "Networks": {
+                "milvus_dev": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "milvus-builder-run-b46084b142b0"
+                    ],
+                    "MacAddress": "02:42:ac:12:00:02",
+                    "NetworkID": "01d037a3cdc6d0034d28397fa202ebf81879e5ed14c167ebeff23a37153e5917",
+                    "EndpointID": "78dc79325b4ab1790d9dc30fafcd509a020fa3fef47ffdf515d3317b25ae940f",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DriverOpts": null,
+                    "DNSNames": [
+                        "milvus-builder-run-b46084b142b0",
+                        "db008e27940b"
+                    ]
+                }
+            }
+        }
+    }
+]
