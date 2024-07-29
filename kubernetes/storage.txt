@@ -1,0 +1,5 @@
+local storage:
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.28/deploy/local-path-storage.yaml
+
+
+kubectl -n minio-operator get secret console-sa-secret -o jsonpath="{.data.token}" | base64 --decode
