@@ -8,4 +8,12 @@ export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:$ROOT_DIR/internal/core/output/lib/pk
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$ROOT_DIR/internal/core/output/lib:$ROOT_DIR/internal/core/output/lib64"
 export RPATH=$LD_LIBRARY_PATH
 
-go run cmd/main.go
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn,direct
+
+go run cmd/main.go run mixture
+
+go build -o milvus -gcflags=all=-N cmd/main.go
+
+demo:
+https://milvus.io/docs/quickstart.md
