@@ -17,3 +17,50 @@ go build -o milvus -gcflags=all=-N cmd/main.go
 
 demo:
 https://milvus.io/docs/quickstart.md
+
+idea disk performance(500ops, 10ms latency):
+apt install fio
+mkdir test-data
+fio --rw=write --ioengine=sync --fdatasync=1 --directory=test-data --size=2200m --bs=2300 --name=mytest
+
+kubectl get storageclass
+
+cat <<EOF > test-nfs-fio-pvc.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-nfs-fio-pvc
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+EOF
+
+cat <<EOF > test-nfs-fio-pod.yaml
+kind: Pod
+apiVersion: v1
+metadata:
+  name: test-nfs-fio-pod
+spec:
+  containers:
+  - name: test-nfs-fio-pod
+    image: node02:5000/openebs/tests-fio:latest
+    command:
+      - "/bin/sh"
+    args:
+      - "-c"
+      - "touch /mnt/SUCCESS && sleep 86400"
+    volumeMounts:
+      - name: nfs-fio-pvc
+        mountPath: "/mnt"
+  restartPolicy: "Never"
+  volumes:
+    - name: nfs-fio-pvc
+      persistentVolumeClaim:
+        claimName: test-nfs-fio-pvc
+EOF
+
+kubectl apply -f test-nfs-fio-pod.yaml
