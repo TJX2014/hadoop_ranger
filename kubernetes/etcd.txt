@@ -1,0 +1,10 @@
+nohup etcd --advertise-client-urls http://0.0.0.0:2389 --data-dir /tmp/milvus_data --listen-client-urls http://0.0.0.0:2389 --listen-peer-urls 'http://0.0.0.0:2381' --log-level=warn 2> "/tmp/milvus_etcd.log" >/dev/null &
+
+list namespaces:
+etcdctl get --keys-only --prefix "/registry/namespaces"
+
+delete ns:
+etcdctl del /registry/namespaces/
+
+delete keys under registry prefix:
+etcdctl del --prefix /registry

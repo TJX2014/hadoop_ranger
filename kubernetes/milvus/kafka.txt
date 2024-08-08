@@ -1,0 +1,12 @@
+kraft start kafka:
+bin/kafka-storage.sh random-uuid
+"..."
+
+bin/kafka-storage.sh format -t "..." -c config/kraft/server.properties
+
+bin/kafka-server-start.sh -daemon config/kraft/server.properties
+
+use kafka:
+bin/kafka-topics.sh --topic aa --create --bootstrap-server localhost:9092
+bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic aa
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic aa

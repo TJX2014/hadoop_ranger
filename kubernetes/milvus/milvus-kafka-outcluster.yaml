@@ -1,0 +1,34 @@
+apiVersion: milvus.io/v1beta1
+kind: Milvus
+metadata:
+  name: kafka-milvus6
+  labels:
+    app: milvus
+spec: 
+  mode: cluster
+  components:
+    image: .../milvusdb/milvus:v2.4.5
+  dependencies:
+    etcd:
+      external: false
+      inCluster:
+        values:
+          image:
+            pullPolicy: IfNotPresent
+            repository: .../milvusdb/etcd
+            tag: 3.5.5-r4
+          replicaCount: 1
+    kafka:
+      external: true
+      brokerList:
+        - "...:9093"
+    storage:
+      external: false
+      inCluster:
+        values:
+          image:
+            pullPolicy: IfNotPresent
+            repository: .../milvusdb/minio
+            tag: RELEASE.2023-03-20T20-16-18Z
+          replicaCount: 1
+    msgStreamType: "kafka"

@@ -21,7 +21,7 @@ curl --retry 10 -L -o cfssljson https://github.com/cloudflare/cfssl/releases/dow
 mv cfssl cfssljson /usr/local/bin/
 chmod +x /usr/local/bin/cfssljson /usr/local/bin/cfssl
 
-nohup etcd --advertise-client-urls http://0.0.0.0:2379 --data-dir /tmp/etcd_data --listen-client-urls http://0.0.0.0:2379 --log-level=warn 2> "/tmp/etcd.log" >/dev/null &
+nohup etcd --advertise-client-urls http://0.0.0.0:2389 --data-dir /tmp/etcd_data --listen-client-urls http://0.0.0.0:2389 --log-level=warn --listen-peer-urls 'http://0.0.0.0:2381' 2> "/tmp/etcd.log" >/dev/null &
 
 cat <<EOF > /tmp/kube_egress_selector_configuration.yaml
 apiVersion: apiserver.k8s.io/v1beta1

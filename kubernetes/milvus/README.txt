@@ -1,6 +1,6 @@
 cd /go/src/github.com/milvus-io/milvus
 
-docker run --name=milvus-builder -v $PWD/.docker/amd64-ubuntu22.04-conan:/home/milvus/.conan -v .:/go/src/github.com/milvus-io/milvus -v $PWD/.docker/amd64-ubuntu22.04-ccache:/ccache -v $PWD/.docker/amd64-ubuntu22.04-go-mod:/go/pkg/mod -v $PWD/.docker/amd64-ubuntu22.04-vscode-extensions:/home/milvus/.vscode-server/extensions -e CONAN_USER_HOME=/home/milvus -e CCACHE_DIR=/ccache -e GOPATH=/go -e GOROOT=/usr/local/go -e GO111MODULE=on -e PATH=/root/.cargo/bin:/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin -w /go/src/github.com/milvus-io/milvus -itd milvusdb/milvus-env:ubuntu22.04-20240620-5be9929 bash
+docker run --name=milvus-debug1 -p 19531:19530 -p 2380:2379 -p 9092:9091 -v $PWD/.docker/amd64-ubuntu22.04-conan:/home/milvus/.conan -v .:/go/src/github.com/milvus-io/milvus -v $PWD/.docker/amd64-ubuntu22.04-ccache:/ccache -v $PWD/.docker/amd64-ubuntu22.04-go-mod:/go/pkg/mod -v $PWD/.docker/amd64-ubuntu22.04-vscode-extensions:/home/milvus/.vscode-server/extensions -e CONAN_USER_HOME=/home/milvus -e CCACHE_DIR=/ccache -e GOPATH=/go -e GOROOT=/usr/local/go -e GO111MODULE=on -e PATH=/root/.cargo/bin:/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin -w /go/src/github.com/milvus-io/milvus -itd milvusdb/milvus-env:ubuntu22.04-20240620-5be9929 bash
 
 export LD_PRELOAD=$PWD/internal/core/output/lib/libjemalloc.so
 export ROOT_DIR=$PWD
@@ -24,6 +24,9 @@ mkdir test-data
 fio --rw=write --ioengine=sync --fdatasync=1 --directory=test-data --size=2200m --bs=2300 --name=mytest
 
 kubectl get storageclass
+
+set default sc:
+k8s32compute patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 cat <<EOF > test-nfs-fio-pvc.yaml
 kind: PersistentVolumeClaim
@@ -64,3 +67,22 @@ spec:
 EOF
 
 kubectl apply -f test-nfs-fio-pod.yaml
+
+docker pull quay.io/jetstack/cert-manager-webhook:v1.5.3 
+docker pull quay.io/jetstack/cert-manager-cainjector:v1.5.3 
+docker pull quay.io/jetstack/cert-manager-controller:v1.5.3
+
+kubectl apply -f https://raw.githubusercontent.com/zilliztech/milvus-operator/main/deploy/manifests/deployment.yaml
+
+kubectl port-forward svc/kafka-milvus6-milvus --address 0.0.0.0 19530:19530
+
+cluster milvus setup:
+export LD_LIBRARY_PATH=/go/src/github.com/milvus-io/milvus/lib:/usr/lib
+
+mixcoord:
+bin/milvus run mixture -rootcoord -querycoord -datacoord -indexcoord
+
+dlv exec --headless --api-version=2 --listen=:2345 bin/milvus -- run mixture -rootcoord -querycoord -datacoord -indexcoord
+
+datanode:
+bin/milvus run datanode
