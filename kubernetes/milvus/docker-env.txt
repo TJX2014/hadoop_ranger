@@ -1,0 +1,27 @@
+docker network create milvus
+
+etcd:
+etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir ...
+docker run -d --name=etcd --net=milvus --network-alias=etcd-net -p 2379:2379 -v etcd_data:/etcd quay.io/coreos/etcd:v3.5.5 etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+
+minio:
+./minio server ./minio_data --console-address ":9001" > /tmp/minio.log 2>&1 &
+GOOS=linux GOARCH=amd64 go build -o minio -gcflags=all=-N main.go
+docker build . -f Dockerfile -t minio:latest
+docker run -d --name=minio --net=milvus --network-alias=minio-net -p 9000:9000 -p 9001:9001 -e MINIO_ACCESS_KEY=minioadmin -e MINIO_SECRET_KEY=minioadmin -v minio_data:/minio_data minio:latest minio server /minio_data --console-address ":9001"
+
+kraft start kafka:
+docker run --name=kafka --net=milvus --network-alias=kafka-net -d -p 9092:9092 apache/kafka:3.7.1
+bin/kafka-storage.sh random-uuid
+"..."
+bin/kafka-storage.sh format -t "..." -c config/kraft/server.properties
+bin/kafka-server-start.sh -daemon config/kraft/server.properties
+use kafka:
+bin/kafka-topics.sh --topic aa --create --bootstrap-server localhost:9092
+bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic aa
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic aa
+
+milvus:
+docker run -d --name=milvus --net=milvus --network-alias=milvus-net -p 19530:19530 -p 9091:9091 -e ETCD_ENDPOINTS=etcd-net:2379 -e MINIO_ADDRESS=minio-net:9000 milvusdb/milvus:latest milvus run standalone
+
+docker run -d -p 8000:3000 --net=milvus -e MILVUS_URL=milvus-net:19530 zilliz/attu:v2.4
