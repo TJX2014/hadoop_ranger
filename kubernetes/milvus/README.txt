@@ -86,3 +86,9 @@ dlv exec --headless --api-version=2 --listen=:2345 bin/milvus -- run mixture -ro
 
 datanode:
 bin/milvus run datanode
+
+bash -c 'export ETCD_USE_EMBED=true && export COMMON_STORAGETYPE=local && milvus run standalone'
+
+kubectl -n default create deployment milvus-alone --image=node02:5000/milvus:latest -- bash -c 'export ETCD_USE_EMBED=true && export COMMON_STORAGETYPE=local && milvus run standalone'
+
+kubectl expose deploy milvus-alone --port 19531 --target-port 19530
