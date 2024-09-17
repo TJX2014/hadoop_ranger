@@ -12,3 +12,26 @@ cd blaze/tpcds/benchmark-runner
 ,q23b,q64,q80
 
 /Users/admin/Library/Java/JavaVirtualMachines/azul-1.8.0_382/Contents/Home/bin/java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0.0.0.0:5005 -cp /Users/admin/Software/spark-3.2.4-bin-hadoop3.2/conf/:/Users/admin/Software/spark-3.2.4-bin-hadoop3.2/jars/* -Xmx1g org.apache.spark.deploy.SparkSubmit --class org.apache.spark.sql.execution.benchmark.TPCDSBenchmarkRunner ./bin/../target/tpcds-benchmark-0.1.0-SNAPSHOT-with-dependencies.jar --data-location /Users/admin/Software/tpcds-20 --output-dir ./benchmark-result --query-filter q23a
+
+val tables: Seq[String] = Seq("catalog_page", "catalog_returns", "customer", "customer_address",
+      "customer_demographics", "date_dim", "household_demographics", "inventory", "item",
+      "promotion", "store", "store_returns", "catalog_sales", "web_sales", "store_sales",
+      "web_returns", "web_site", "reason", "call_center", "warehouse", "ship_mode", "income_band",
+      "time_dim", "web_page")
+
+val dataLocation = "/Users/admin/Software/tpcds-20"
+
+tables.par.foreach { tableName =>
+    spark.read.parquet(s"$dataLocation/$tableName").createOrReplaceTempView(tableName)
+}
+
+tableName -> spark.table(tableName).count()
+
+val queryResource = s"file:///Users/admin/Projects/blaze/tpcds/benchmark-runner/src/main/resources/tpcds/queries/q23a.sql"
+val resourceUrl = new java.net.URL(queryResource)
+val queryString = {
+    org.apache.commons.io.IOUtils.toString(resourceUrl)
+}
+
+val begin = System.currentTimeMillis()
+spark.sql(queryString).show
