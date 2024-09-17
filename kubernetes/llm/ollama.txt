@@ -39,4 +39,4 @@ ollama create qwen1_8B -f Modelfile
 ollama list
 ollama run qwen1_8B:latest
 
-
+curl -H "Content-Type:application/json" -XPOST 'http://localhost:11434/api/embeddings' -d '{"model": "llama2", "prompt": "query: foo"}'
